@@ -277,7 +277,7 @@ async function refreshState(){
   const party=s.party,multi=!!(party&&party.size>1),notLeader=multi&&!party.is_leader;
   renderServers(s,notLeader);
   document.getElementById('queueCount').textContent=((s.queue.counts||{})[selServer]||0)+'/'+s.queue.needed;
-  document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
+  document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер (лидер должен держать приложение открытым)':'Ты в очереди — не закрывай приложение. Нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
   const qb=document.getElementById('queueBtn');qb.innerHTML=s.queue.joined?'<svg class="ic"><use href="#i-x"/></svg> ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'<svg class="ic"><use href="#i-crosshair"/></svg> НАЙТИ МАТЧ ПАТИ':'<svg class="ic"><use href="#i-crosshair"/></svg> НАЙТИ МАТЧ');
   if(multi&&party.is_leader&&!s.queue.joined&&!party.all_ready){qb.innerHTML='<svg class="ic"><use href="#i-clock"/></svg> ЖДЁМ ГОТОВНОСТЬ ('+party.ready_count+'/'+party.size+')';document.getElementById('queueHint').textContent='Поиск начнётся, когда все нажмут «Готов»';}
   qb.disabled=queueDisabled(s);renderPartyStrip(party);
@@ -594,6 +594,12 @@ async function saveMatchStats(matchId){
 function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
 function loadAdmin(){loadAdminLog();loadAdminMatches();loadAdminFinishedMatches();}
 refreshState();
+// Пока идёт поиск, сообщаем серверу, что приложение открыто. Закрыл приложение — через ~45 секунд поиск остановится сам.
+setInterval(async()=>{
+ if(document.visibilityState!=='visible'||!state?.queue?.joined)return;
+ try{const r=await post('/api/queue/ping');if(r&&r.in_queue===false)await refreshState();}catch(e){}
+},10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshState();});
 (function pollLoop(){
  setTimeout(async()=>{
   if(document.visibilityState==='visible'){await refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}
