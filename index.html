@@ -508,7 +508,7 @@ async function saveMatchStats(matchId){
  const form=document.getElementById('matchStatsForm'+matchId);if(!form)return;
  const ids=[...new Set([...form.querySelectorAll('[data-uid]')].map(x=>x.dataset.uid))];
  const players=ids.map(id=>{const read=k=>Number(form.querySelector('[data-uid="'+id+'"][data-stat="'+k+'"]').value);return {tg_id:Number(id),kills:read('kills'),assists:read('assists'),deaths:read('deaths')};});
- if(players.some(p=>Object.values(p).some(v=>!Number.isInteger(v)||v<0||v>999))){notify('Все значения должны быть целыми числами от 0 до 999.',true);return;}
+ if(players.some(p=>!Number.isInteger(p.tg_id)||p.tg_id<=0||['kills','assists','deaths'].some(k=>!Number.isInteger(p[k])||p[k]<0||p[k]>999))){notify('Убийства, помощь и смерти должны быть целыми числами от 0 до 999.',true);return;}
  try{const r=await post('/api/admin/match-stats',{match_id:matchId,players});notify(r.message);await loadAdminFinishedMatches();}catch(e){notify(e.message,true);}
 }
 function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
