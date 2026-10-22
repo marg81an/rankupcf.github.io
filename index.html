@@ -16,7 +16,7 @@ select.input option{background:#1b1d22;color:#fff}
 .lvl.l4,.lvl.l5,.lvl.l6{background:#173a2a;color:#6fe0a5}.lvl.l7,.lvl.l8,.lvl.l9{background:#4a2a14;color:#ff9a5c}.lvl.l10{background:#5a2a10;color:#ffd35c}
 .mini{border:1px solid #3a3d46;background:#292c33;color:#fff;border-radius:9px;padding:8px 11px;font:800 11px system-ui;cursor:pointer}.mini.go{background:var(--orange);border-color:var(--orange)}.mini.red{background:#3a1f1c;border-color:#69322b;color:#ffc0b1}.mini:disabled{opacity:.45}
 .btns{display:flex;gap:6px;flex:none}.warn{color:#ffb199}.player.me{background:#ff5a1f14;border-radius:10px;padding-left:8px;padding-right:8px}.rk{flex:none;width:34px;font-weight:900;font-size:13px}
-.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 4px}.sep{height:1px;background:var(--line);margin:14px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn.red{background:#c0392b}.btn.green{background:#1f9d5c}.fl{display:block;font-size:11px;color:var(--muted);margin:10px 0 0}
+.host{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-left:6px;background:#4a3a10;color:#ffd35c;vertical-align:middle}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 4px}.sep{height:1px;background:var(--line);margin:14px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn.red{background:#c0392b}.btn.green{background:#1f9d5c}.fl{display:block;font-size:11px;color:var(--muted);margin:10px 0 0}
 </style>
 </head>
 <body><div class="wrap">
@@ -67,13 +67,14 @@ select.input option{background:#1b1d22;color:#fff}
 <section class="page" id="admin"><div class="eyebrow">ADMIN</div><h1 style="font-size:27px;margin:8px 0 4px">Панель администратора</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Бан, разбан и корректировка ELO. Все действия записываются в журнал.</p>
  <div class="card"><label class="fl" for="adminQ" style="margin-top:0">Поиск игрока</label><input class="input" id="adminQ" maxlength="64" autocomplete="off" placeholder="Ник, игровой ID, Telegram ID или @username"><button class="btn" id="adminSearchBtn" onclick="adminSearch()">НАЙТИ</button><div id="adminResults"></div></div>
  <div class="card" id="adminPlayer" style="display:none;margin-top:12px"></div>
+ <div class="row" style="border:0;padding:0;margin:22px 0 10px"><div class="title" style="margin:0">Активные матчи</div><button class="mini" onclick="loadAdminMatches()">Обновить</button></div><div class="card" id="adminMatches"><div class="empty">Загрузка матчей…</div></div>
  <div class="title">Последние действия</div><div class="card" id="adminLog"><div class="empty">Загрузка журнала…</div></div>
 </section>
 </div><nav class="nav"><button class="active" data-page="find"><span class="ico">⌕</span>Найти матч</button><button data-page="stats"><span class="ico">▥</span>Статистика</button><button data-page="friends"><span class="ico">👥</span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico">◉</span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico">🛡</span>Админ</button></nav>
 <script>
 // IMPORTANT: set this to your public HTTPS API URL after starting Cloudflare Tunnel.
 // Example: const API_BASE = 'https://your-name.trycloudflare.com';
-const API_BASE = 'https://webcams-intermediate-nested-temperature.trycloudflare.com';
+const API_BASE = 'https://andy-broke-arabia-elegant.trycloudflare.com';
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#101114'); tg.setBackgroundColor('#101114'); } catch(e){} }
 const initData = tg?.initData || '';
@@ -96,7 +97,7 @@ async function request(path, options={}) {
 function renderMatch(m){
  const box=document.getElementById('matchCard');
  if(!m){box.innerHTML='<div class="empty">Активного матча нет.<br>Нажми «Найти матч», чтобы встать в очередь.</div>';return;}
- const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
+ const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
  let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'+team('🟦 '+(m.team1_name||'Команда 1'),m.team1)+team('🟥 '+(m.team2_name||'Команда 2'),m.team2);
  if(m.room_data) html+='<div class="row"><span>Данные комнаты</span><b>'+escapeHtml(m.room_data)+'</b></div>';
  if(m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
@@ -309,7 +310,23 @@ async function loadAdminLog(){
   box.innerHTML=r.log.length?r.log.map(x=>'<div class="item"><span><b>'+escapeHtml(x.action)+'</b> · '+escapeHtml(x.target)+'<br><small class="muted">'+escapeHtml(x.admin)+(x.details?' · '+escapeHtml(x.details):'')+'</small></span><small class="muted">'+new Date(x.at*1000).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></div>').join(''):'<div class="empty">Действий пока не было.</div>';
  }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
 }
-function loadAdmin(){loadAdminLog();}
+
+function hostTag(){return '<span class="host">👑 ХОСТ</span>';}
+async function loadAdminMatches(){
+ const box=document.getElementById('adminMatches');
+ try{
+  const r=await request('/api/admin/matches');
+  if(!r.matches.length){box.innerHTML='<div class="empty">Активных матчей нет.</div>';return;}
+  const side=(name,list,hostId)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player" onclick="adminJump('+p.tg_id+')" style="cursor:pointer"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===hostId?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
+  box.innerHTML=r.matches.map(m=>{const min=Math.max(0,Math.floor((r.now-m.created_at)/60));
+   return '<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px"><div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'
+    +'<div class="hint" style="margin:0 0 6px">Идёт '+min+' мин · скриншотов: '+m.screenshots+' · данные комнаты: '+(m.room_set?'есть':'нет')+'</div>'
+    +side('🟦 '+m.team1_name,m.team1,m.host_id)+side('🟥 '+m.team2_name,m.team2,m.host_id)
+    +'<div class="hint">Нажми на игрока, чтобы открыть его в панели. Отменить матч: /cancelmatch '+m.id+'</div></div>';}).join('');
+ }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+}
+function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
+function loadAdmin(){loadAdminLog();loadAdminMatches();}
 refreshState();
 setInterval(()=>{if(document.visibilityState==='visible'){refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}},12000);
 </script></body></html>
