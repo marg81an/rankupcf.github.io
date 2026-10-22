@@ -29,29 +29,13 @@ button.map.avail{cursor:pointer;border-color:var(--orange);background:#ff5a1f14}
 .pvh{display:flex;gap:14px;align-items:center;margin:0 0 14px}.pvav{width:64px;height:64px;border-radius:18px;background:#292c33;display:grid;place-items:center;font-weight:900;font-size:24px;overflow:hidden;flex:none}.pvav img{width:100%;height:100%;object-fit:cover}
 .pvn{font-size:20px;font-weight:900;overflow:hidden;text-overflow:ellipsis}.pvx{margin-left:auto;align-self:flex-start;flex:none}
 .rdy{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-right:6px;background:#173a2a;color:#6fe0a5;vertical-align:middle}.rdy.wait{background:#33363e;color:#c9ccd4}
-
-/* UI alignment and contrast fixes */
-:root{--orange:#fff}
-.btn{background:#fff!important;color:#080808!important}
-.btn.secondary{background:#202126!important;color:#fff!important}
-.btn.ghost{color:#fff!important}
-.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;line-height:1.2;min-height:62px;padding:8px 2px}
-.nav .ico,.action .ico{display:flex;align-items:center;justify-content:center;width:24px;height:24px;margin:0 auto 2px;font-size:0;line-height:1;flex:0 0 24px}
-.nav .ico svg,.action .ico svg,.ico svg{display:block;width:22px;height:22px;stroke:currentColor;stroke-width:1.8;flex-shrink:0}
-.action{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}
-.action .ico{margin:0 0 3px;align-self:flex-start}
-.btn svg{width:18px;height:18px;vertical-align:middle;margin-right:8px}
-.nav button.active{color:#fff;background:#ffffff12}
-.status{color:#fff}
-input,textarea,button{font-family:inherit}
-
 </style>
 </head>
 <body><div class="wrap">
 <header class="top"><div><div class="brand">RANK<span>UP</span></div><div class="sub">COMPETITIVE MATCHMAKING</div></div><div class="avatar" id="avatar">RU</div></header>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 <section class="page active" id="find">
- <div class="hero" id="queueHero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><div id="serverBox" style="margin:0 0 14px"></div><button class="btn" id="queueBtn" onclick="toggleQueue()">НАЙТИ МАТЧ</button></div>
+ <div class="hero" id="queueHero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><div id="serverBox" style="margin:0 0 14px"></div><button class="btn" id="queueBtn" onclick="toggleQueue()">🎮 НАЙТИ МАТЧ</button></div>
  <div class="grid" id="queueStats"><div class="stat"><small>Твой рейтинг</small><div class="number" id="elo">—</div><div class="hint" id="rank">Загрузка профиля…</div></div><div class="stat"><small>Очередь</small><div class="number" id="queueCount">—/10</div><div class="hint" id="queueHint">Игроков в поиске</div></div></div>
  <div class="card" id="partyStrip" style="display:none;margin-bottom:12px"></div>
  <div class="title">Текущий матч</div><div class="card" id="matchCard"><div class="empty">Загружаю состояние матча…</div></div>
@@ -207,7 +191,7 @@ async function refreshState(){
   renderServers(s,notLeader);
   document.getElementById('queueCount').textContent=((s.queue.counts||{})[selServer]||0)+'/'+s.queue.needed;
   document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
-  const qb=document.getElementById('queueBtn');qb.textContent=s.queue.joined?'✕ ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'НАЙТИ МАТЧ ПАТИ':'НАЙТИ МАТЧ');
+  const qb=document.getElementById('queueBtn');qb.textContent=s.queue.joined?'✕ ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'🎮 НАЙТИ МАТЧ ПАТИ':'🎮 НАЙТИ МАТЧ');
   if(multi&&party.is_leader&&!s.queue.joined&&!party.all_ready){qb.textContent='⏳ ЖДЁМ ГОТОВНОСТЬ ('+party.ready_count+'/'+party.size+')';document.getElementById('queueHint').textContent='Поиск начнётся, когда все нажмут «Готов»';}
   qb.disabled=queueDisabled(s);renderPartyStrip(party);
   document.getElementById('navAdmin').style.display=s.is_admin?'':'none';const dot=document.getElementById('friendsDot');dot.textContent=s.badge;dot.classList.toggle('show',s.badge>0);
