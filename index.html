@@ -80,11 +80,6 @@ body{background:#000}
 </section>
 <section class="page" id="profile"><div class="eyebrow">PLAYER CARD</div><div style="display:flex;gap:13px;align-items:center;margin:18px 0"><div class="avatar" id="bigavatar" style="width:64px;height:64px;font-size:24px;border-radius:18px">RU</div><div><h2 id="playerName" style="font-size:19px;margin:0 0 4px">Игрок</h2><div class="muted" id="playerId" style="font-size:12px">Профиль загружается…</div><div style="margin-top:7px"><span class="pill" id="profileRank">Рейтинговый игрок</span></div></div></div>
  <div class="card"><div class="row"><span class="muted">ELO</span><b id="profileElo">—</b></div><div class="row"><span class="muted">Уровень</span><b id="profileLevel">—</b></div><div class="row"><span class="muted">До следующего уровня</span><b id="levelNext">—</b></div><div class="row"><span class="muted">Победы / поражения</span><b id="record">—</b></div><div class="row"><span class="muted">Место в топе</span><b id="profilePlace">—</b></div><div class="row"><span class="muted">Убийства за всё время</span><b id="totalKills">0</b></div><div class="row"><span class="muted">Помощь за всё время</span><b id="totalAssists">0</b></div><div class="row"><span class="muted">Смерти за всё время</span><b id="totalDeaths">0</b></div></div>
- <div class="grid" style="margin-top:12px">
-  <div class="stat"><small>Серия побед</small><div class="number" id="winStreak">0</div><div class="hint">Текущая серия</div></div>
-  <div class="stat"><small>Рекорд побед подряд</small><div class="number" id="bestStreak">0</div><div class="hint">За всю историю</div></div>
- </div>
- <div class="title">Достижения</div><div class="card" id="achievements"><div class="empty">Загрузка достижений…</div></div>
  <div class="actions" style="margin-top:12px"><button class="action" onclick="toggleBox('editBox')"><span class="ico"><svg class="ic"><use href="#i-pencil"/></svg></span><b>Изменить профиль</b><small>Ник, ID, аватарка</small></button><button class="action" onclick="toggleBox('complaintBox')"><span class="ico"><svg class="ic"><use href="#i-flag"/></svg></span><b>Пожаловаться</b><small>Читер, баг, ошибка ELO</small></button></div>
  <div class="card" id="editBox" style="display:none;margin-top:12px"><div class="title" style="margin:0 0 10px">Изменить профиль</div>
   <div style="display:flex;gap:12px;align-items:center"><div class="avatar" id="editAvatar" style="width:60px;height:60px;border-radius:17px;font-size:22px;flex:none">RU</div><div style="flex:1;min-width:0"><input class="upload" type="file" id="avatarFile" accept="image/*" style="margin:0"><button class="btn ghost" style="margin-top:8px;min-height:38px" onclick="removeAvatar()">Удалить аватарку</button></div></div>
@@ -118,6 +113,7 @@ body{background:#000}
  <div class="card"><label class="fl" for="adminQ" style="margin-top:0">Поиск игрока</label><input class="input" id="adminQ" maxlength="64" autocomplete="off" placeholder="Ник, игровой ID, Telegram ID или @username"><button class="btn" id="adminSearchBtn" onclick="adminSearch()">НАЙТИ</button><div id="adminResults"></div></div>
  <div class="card" id="adminPlayer" style="display:none;margin-top:12px"></div>
  <div class="row" style="border:0;padding:0;margin:22px 0 10px"><div class="title" style="margin:0">Активные матчи</div><button class="mini" onclick="loadAdminMatches()">Обновить</button></div><div class="card" id="adminMatches"><div class="empty">Загрузка матчей…</div></div>
+ <div class="row" style="border:0;padding:0;margin:22px 0 10px"><div class="title" style="margin:0">Завершённые матчи · статистика</div><button class="mini" onclick="loadAdminFinishedMatches()">Обновить</button></div><div class="card" id="adminFinishedMatches"><div class="empty">Загрузка завершённых матчей…</div></div>
  <div class="title">Последние действия</div><div class="card" id="adminLog"><div class="empty">Загрузка журнала…</div></div>
 </section>
 </div><nav class="nav"><button class="active" data-page="find"><span class="ico"><svg class="ic"><use href="#i-search"/></svg></span>Найти матч</button><button data-page="stats"><span class="ico"><svg class="ic"><use href="#i-chart"/></svg></span>Статистика</button><button data-page="friends"><span class="ico"><svg class="ic"><use href="#i-users"/></svg></span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico"><svg class="ic"><use href="#i-user"/></svg></span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico"><svg class="ic"><use href="#i-shield"/></svg></span>Админ</button></nav>
@@ -209,7 +205,7 @@ async function vetoMap(name){
 function renderMatch(m){
  const box=document.getElementById('matchCard');
  if(!m){box.innerHTML='<div class="empty">Активного матча нет.<br>Нажми «Найти матч» выше, чтобы встать в очередь.</div>';return;}
- const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
+ const team=(name,players)=>'<div class="team"><h3>'+(name.startsWith('<span class="sq a"></span> ')?'<span class="sq a"></span> '+escapeHtml(name.slice(27)):name.startsWith('<span class="sq b"></span> ')?'<span class="sq b"></span> '+escapeHtml(name.slice(27)):escapeHtml(name))+'</h3>'+players.map(p=>'<div class="player"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
  const pending=isPending(m);
  let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':pending?'Выбор карты':'Игра идёт')+'</span></div>'+(m.server_label?'<div class="row"><span class="muted"><svg class="ic"><use href="#i-globe"/></svg> Сервер</span><b>'+escapeHtml(m.server_label)+'</b></div>':'')+(m.map?'<div class="row"><span class="muted"><svg class="ic"><use href="#i-map"/></svg> Карта</span><b>'+escapeHtml(m.map)+'</b></div>':'')+vetoBlock(m)+team('<span class="sq a"></span> '+(m.team1_name||'Команда 1'),m.team1)+team('<span class="sq b"></span> '+(m.team2_name||'Команда 2'),m.team2);
  if(m.room_data) html+='<div class="row"><span>Данные комнаты</span><b>'+escapeHtml(m.room_data)+'</b></div>';
@@ -236,29 +232,7 @@ async function refreshState(){
   document.getElementById('navAdmin').style.display=s.is_admin?'':'none';const dot=document.getElementById('friendsDot');dot.textContent=s.badge;dot.classList.toggle('show',s.badge>0);
   document.getElementById('statElo').textContent=p.elo;document.getElementById('statRank').textContent='Место #'+s.rank+' · Уровень '+p.level;
   const games=p.wins+p.losses;document.getElementById('games').textContent=games;document.getElementById('wins').textContent=p.wins;document.getElementById('winrate').textContent=games?Math.round(p.wins/games*100)+'%':'—';
-  document.getElementById('playerName').textContent=p.game_nick;document.getElementById('playerId').textContent='Игровой ID: '+p.game_id;document.getElementById('profileRank').textContent='Игрок #'+s.rank+' · LVL '+p.level;document.getElementById('profileElo').textContent=p.elo;document.getElementById('profileLevel').textContent=p.level+' из 10';document.getElementById('levelNext').textContent=p.level_next?('ещё '+(p.level_next-p.elo)+' ELO'):'максимальный';document.getElementById('record').textContent=p.wins+' / '+p.losses;document.getElementById('profilePlace').textContent='#'+s.rank;
-  const finishedHistory=(s.history||[]).filter(x=>x.status==='finished');
-  let currentStreak=0, bestStreak=0, streak=0;
-  for(const item of [...finishedHistory].reverse()){
-    if(item.label==='Победа'){streak++;bestStreak=Math.max(bestStreak,streak);}
-    else {streak=0;}
-  }
-  for(const item of finishedHistory){if(item.label==='Победа')currentStreak++;else break;}
-  const ws=document.getElementById('winStreak'); if(ws)ws.textContent=currentStreak;
-  const bs=document.getElementById('bestStreak'); if(bs)bs.textContent=bestStreak;
-  const achievements=document.getElementById('achievements');
-  if(achievements){
-    const games=p.wins+p.losses, kills=Number(p.kills||0), assists=Number(p.assists||0), deaths=Number(p.deaths||0);
-    const all=[
-      ['Первая победа',p.wins>=1,'Получить первую победу'],
-      ['Десятка',games>=10,'Сыграть 10 матчей'],
-      ['Ветеран',games>=100,'Сыграть 100 матчей'],
-      ['Фраггер',kills>=50,'Совершить 50 убийств'],
-      ['Поддержка',assists>=25,'Набрать 25 помощи'],
-      ['На подъёме',bestStreak>=5,'Выиграть 5 матчей подряд']
-    ];
-    achievements.innerHTML='<div class="grid">'+all.map(([name,ok,desc])=>'<div class="stat" style="opacity:'+(ok?'1':'.55')+'"><div style="font-weight:850;font-size:12px">'+(ok?'✓ ':'○ ')+name+'</div><div class="hint">'+desc+'</div></div>').join('')+'</div>';
-  }document.getElementById('totalKills').textContent=p.kills??0;document.getElementById('totalAssists').textContent=p.assists??0;document.getElementById('totalDeaths').textContent=p.deaths??0;
+  document.getElementById('playerName').textContent=p.game_nick;document.getElementById('playerId').textContent='Игровой ID: '+p.game_id;document.getElementById('profileRank').textContent='Игрок #'+s.rank+' · LVL '+p.level;document.getElementById('profileElo').textContent=p.elo;document.getElementById('profileLevel').textContent=p.level+' из 10';document.getElementById('levelNext').textContent=p.level_next?('ещё '+(p.level_next-p.elo)+' ELO'):'максимальный';document.getElementById('record').textContent=p.wins+' / '+p.losses;document.getElementById('profilePlace').textContent='#'+s.rank;document.getElementById('totalKills').textContent=p.kills??0;document.getElementById('totalAssists').textContent=p.assists??0;document.getElementById('totalDeaths').textContent=p.deaths??0;
   document.getElementById('searchBlock').style.display=s.match?'none':'';document.getElementById('partyStrip').dataset.inMatch=s.match?'1':'';
   setVetoDeadline(s.match);
   const sig=JSON.stringify(s.match,(k,v)=>k==='seconds_left'?undefined:v);
@@ -506,14 +480,28 @@ async function loadAdminMatches(){
  const box=document.getElementById('adminMatches');
  try{
   const r=await request('/api/admin/matches');
-  if(!r.matches.length){box.innerHTML='<div class="empty">Матчей пока нет.</div>';return;}
+  if(!r.matches.length){box.innerHTML='<div class="empty">Активных матчей сейчас нет.</div>';return;}
   const side=(name,list,hostId)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player" onclick="adminJump('+p.tg_id+')" style="cursor:pointer"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===hostId?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
   box.innerHTML=r.matches.map(m=>{const min=Math.max(0,Math.floor((r.now-m.created_at)/60));
-   return '<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px"><div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':m.status==='finished'?'Завершён':'Игра идёт')+'</span></div>'
+   return '<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px"><div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Активен')+'</span></div>'
     +'<div class="hint" style="margin:0 0 6px">Идёт '+min+' мин · '+(m.server_label?'сервер: '+escapeHtml(m.server_label)+' · ':'')+(m.map?'карта: '+escapeHtml(m.map)+' · ':(m.veto_phase==='ban'||m.veto_phase==='pick'?'идёт выбор карты · ':''))+'скриншотов: '+m.screenshots+' · данные комнаты: '+(m.room_set?'есть':'нет')+'</div>'
     +side('Команда 1 · '+m.team1_name,m.team1,m.host_id)+side('Команда 2 · '+m.team2_name,m.team2,m.host_id)
     +(m.status==='finished'?'<div class="title">Подробная статистика</div><div class="hint">Укажи убийства, помощь и смерти для каждого игрока.</div><div id="matchStatsForm'+m.id+'">'+m.team1.concat(m.team2).map(p=>{const old=(m.stats||[]).find(x=>x.tg_id===p.tg_id)||{};return '<div class="card" style="margin:8px 0;padding:10px"><b>'+escapeHtml(p.game_nick)+'</b><div class="grid" style="margin:6px 0"><label class="muted">Убийства<input class="input" type="number" min="0" max="999" data-stat="kills" data-uid="'+p.tg_id+'" value="'+(old.kills??0)+'"></label><label class="muted">Помощь<input class="input" type="number" min="0" max="999" data-stat="assists" data-uid="'+p.tg_id+'" value="'+(old.assists??0)+'"></label><label class="muted">Смерти<input class="input" type="number" min="0" max="999" data-stat="deaths" data-uid="'+p.tg_id+'" value="'+(old.deaths??0)+'"></label></div></div>';}).join('')+'<button class="btn" onclick="saveMatchStats('+m.id+')">СОХРАНИТЬ СТАТИСТИКУ</button></div>':'')
     +'<div class="hint">'+(m.status==='finished'?'Результат подтверждён.':'Матч ещё не завершён. Подробная статистика откроется после подтверждения результата.')+'</div></div>';}).join('');
+ }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+}
+async function loadAdminFinishedMatches(){
+ const box=document.getElementById('adminFinishedMatches');
+ try{
+  const r=await request('/api/admin/finished-matches');
+  if(!r.matches.length){box.innerHTML='<div class="empty">Завершённых матчей пока нет.</div>';return;}
+  const side=(name,list)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
+  box.innerHTML=r.matches.map(m=>'<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px">'
+   +'<div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">Завершён</span></div>'
+   +'<div class="hint" style="margin:0 0 6px">'+(m.server_label?'Сервер: '+escapeHtml(m.server_label)+' · ':'')+(m.map?'Карта: '+escapeHtml(m.map):'')+'</div>'
+   +side('Команда 1 · '+m.team1_name,m.team1)+side('Команда 2 · '+m.team2_name,m.team2)
+   +'<div class="title">Подробная статистика</div><div class="hint">Укажи убийства, помощь и смерти для каждого игрока. Данные можно исправлять и сохранять повторно.</div>'
+   +'<div id="matchStatsForm'+m.id+'">'+m.team1.concat(m.team2).map(p=>{const old=(m.stats||[]).find(x=>x.tg_id===p.tg_id)||{};return '<div class="card" style="margin:8px 0;padding:10px"><b>'+escapeHtml(p.game_nick)+'</b><div class="grid" style="margin:6px 0"><label class="muted">Убийства<input class="input" type="number" min="0" max="999" data-stat="kills" data-uid="'+p.tg_id+'" value="'+(old.kills??0)+'"></label><label class="muted">Помощь<input class="input" type="number" min="0" max="999" data-stat="assists" data-uid="'+p.tg_id+'" value="'+(old.assists??0)+'"></label><label class="muted">Смерти<input class="input" type="number" min="0" max="999" data-stat="deaths" data-uid="'+p.tg_id+'" value="'+(old.deaths??0)+'"></label></div></div>';}).join('')+'<button class="btn" onclick="saveMatchStats('+m.id+')">СОХРАНИТЬ СТАТИСТИКУ</button></div></div>').join('');
  }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
 }
 async function saveMatchStats(matchId){
@@ -521,10 +509,10 @@ async function saveMatchStats(matchId){
  const ids=[...new Set([...form.querySelectorAll('[data-uid]')].map(x=>x.dataset.uid))];
  const players=ids.map(id=>{const read=k=>Number(form.querySelector('[data-uid="'+id+'"][data-stat="'+k+'"]').value);return {tg_id:Number(id),kills:read('kills'),assists:read('assists'),deaths:read('deaths')};});
  if(players.some(p=>Object.values(p).some(v=>!Number.isInteger(v)||v<0||v>999))){notify('Все значения должны быть целыми числами от 0 до 999.',true);return;}
- try{const r=await post('/api/admin/match-stats',{match_id:matchId,players});notify(r.message);await loadAdminMatches();}catch(e){notify(e.message,true);}
+ try{const r=await post('/api/admin/match-stats',{match_id:matchId,players});notify(r.message);await loadAdminFinishedMatches();}catch(e){notify(e.message,true);}
 }
 function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
-function loadAdmin(){loadAdminLog();loadAdminMatches();}
+function loadAdmin(){loadAdminLog();loadAdminMatches();loadAdminFinishedMatches();}
 refreshState();
 (function pollLoop(){
  setTimeout(async()=>{
