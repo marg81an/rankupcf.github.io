@@ -2,44 +2,118 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#101114"><title>Counter Flame</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta name="theme-color" content="#101114"><title>RANKUP</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script><script src="https://unpkg.com/lucide@latest"></script>
 <style>
-:root{color-scheme:dark;--bg:#090909;--panel:#191919;--panel2:#222;--muted:#b8b8bf;--orange:#fff;--line:#363636;--white:#fff;--green:#45d483}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:15px/1.4 system-ui,-apple-system,sans-serif;padding:0 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}.wrap{max-width:680px;margin:auto;padding:16px 15px 24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:22px;font-weight:1000}.brand span,.orange{color:var(--orange)}.sub{font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:800}.avatar{width:42px;height:42px;border-radius:14px;background:#292c33;display:grid;place-items:center;font-weight:900}.page{display:none}.page.active{display:block}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--orange);font-weight:900}.hero{background:linear-gradient(145deg,#202020,#101010 75%);border:1px solid #414141;border-radius:20px;padding:21px 18px;margin-bottom:12px}.hero h1{font-size:29px;line-height:1.1;margin:12px 0 9px;letter-spacing:-.7px}.hero p{font-size:13px;color:#c0c1c7;margin:0 0 17px}.btn{width:100%;min-height:52px;border:1px solid #fff;border-radius:13px;background:#fff;color:#080808;font-size:13px;font-weight:900;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:center;gap:10px;line-height:1.25;text-align:center}.btn .btn-icon{width:19px;height:19px;flex:0 0 19px;display:inline-flex;align-items:center;justify-content:center}.btn.secondary{background:#242424;color:#fff;border:1px solid #484848}.btn.ghost{background:transparent;color:#fff;border:1px solid #484848}.btn:disabled{opacity:.5}.btn.secondary{background:#292c33;border:1px solid #3a3d46}.btn.ghost{background:transparent;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px}.stat small,.muted{color:var(--muted)}.number{font-size:24px;font-weight:950;margin-top:4px}.hint{font-size:10px;color:var(--muted);margin-top:3px}.title{font-size:16px;font-weight:900;margin:22px 0 10px}.status{display:none;padding:11px 12px;border-radius:12px;margin:0 0 12px;font-size:12px;background:#1c2922;border:1px solid #294737;color:#b5f2d0}.status.show{display:block}.status.error{background:#321e1d;border-color:#69322b;color:#ffc0b1}.pill{display:inline-block;border:1px solid #3a3d45;background:#292c33;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.row:last-child{border-bottom:0}.team{margin:10px 0}.team h3{font-size:12px;margin:0 0 8px}.player{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:7px 0;border-bottom:1px solid #292c33}.player:last-child{border:0}.input,.textarea{display:block;width:100%;border:1px solid #3a3d46;background:#121317;color:white;border-radius:11px;padding:12px;font:13px system-ui;margin:8px 0 10px;outline:none}.textarea{min-height:78px;resize:vertical}.upload{display:block;width:100%;border:1px dashed #565b66;background:#17191e;border-radius:12px;padding:14px;margin:8px 0 10px;color:#d7d9de;font-size:12px}.item{padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;display:flex;justify-content:space-between;gap:12px}.item:last-child{border:0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.action{background:var(--panel);border:1px solid var(--line);border-radius:14px;text-align:left;color:white;padding:14px 12px;min-height:85px;cursor:pointer}.action b{display:block;font-size:12px}.action small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.action .ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:9px}.action .ico svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.8;fill:none}.nav .ico svg{width:23px;height:23px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}.empty{text-align:center;color:var(--muted);padding:17px 7px;font-size:12px;line-height:1.5}.nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:rgba(23,24,28,.97);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:7px 10px calc(7px + env(safe-area-inset-bottom))}.nav button{background:transparent;border:0;border-radius:10px;color:var(--muted);font:750 10px system-ui;padding:7px 2px}.nav button.active{color:#fff;background:#303030}.nav .ico{display:flex;align-items:center;justify-content:center;width:26px;height:24px;margin:0 auto 6px;font-size:20px;line-height:1}.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:58px}.nav button svg,.action .ico svg{display:block;width:22px;height:22px}.foot{font-size:10px;color:var(--muted);line-height:1.5;margin:13px 2px}
+:root{color-scheme:dark;--bg:#101114;--panel:#1b1d22;--panel2:#24272e;--muted:#999eaa;--orange:#ffffff;--line:#30333b;--white:#f5f6f8;--green:#45d483}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:15px/1.4 system-ui,-apple-system,sans-serif;padding:0 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}.wrap{max-width:680px;margin:auto;padding:16px 15px 24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:22px;font-weight:1000}.brand span,.orange{color:var(--orange)}.sub{font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:800}.avatar{width:42px;height:42px;border-radius:14px;background:#292c33;display:grid;place-items:center;font-weight:900}.page{display:none}.page.active{display:block}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--orange);font-weight:900}.hero{background:radial-gradient(circle at 100% 0,#292929 0,transparent 42%),linear-gradient(140deg,#181818,#090909 70%);border:1px solid #3a3a3a;border-radius:20px;padding:21px 18px;margin-bottom:12px}.hero h1{font-size:29px;line-height:1.1;margin:12px 0 9px;letter-spacing:-.7px}.hero p{font-size:13px;color:#c0c1c7;margin:0 0 17px}.btn{width:100%;min-height:47px;border:0;border-radius:12px;background:var(--orange);color:white;font-size:13px;font-weight:950;cursor:pointer;padding:12px 14px}.btn:disabled{opacity:.5}.btn.secondary{background:#292c33;border:1px solid #3a3d46}.btn.ghost{background:transparent;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px}.stat small,.muted{color:var(--muted)}.number{font-size:24px;font-weight:950;margin-top:4px}.hint{font-size:10px;color:var(--muted);margin-top:3px}.title{font-size:16px;font-weight:900;margin:22px 0 10px}.status{display:none;padding:11px 12px;border-radius:12px;margin:0 0 12px;font-size:12px;background:#1c2922;border:1px solid #294737;color:#b5f2d0}.status.show{display:block}.status.error{background:#321e1d;border-color:#69322b;color:#ffc0b1}.pill{display:inline-block;border:1px solid #3a3d45;background:#292c33;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.row:last-child{border-bottom:0}.team{margin:10px 0}.team h3{font-size:12px;margin:0 0 8px}.player{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:7px 0;border-bottom:1px solid #292c33}.player:last-child{border:0}.input,.textarea{display:block;width:100%;border:1px solid #3a3d46;background:#121317;color:white;border-radius:11px;padding:12px;font:13px system-ui;margin:8px 0 10px;outline:none}.textarea{min-height:78px;resize:vertical}.upload{display:block;width:100%;border:1px dashed #565b66;background:#17191e;border-radius:12px;padding:14px;margin:8px 0 10px;color:#d7d9de;font-size:12px}.item{padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;display:flex;justify-content:space-between;gap:12px}.item:last-child{border:0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.action{background:var(--panel);border:1px solid var(--line);border-radius:14px;text-align:left;color:white;padding:14px 12px;min-height:85px;cursor:pointer}.action b{display:block;font-size:12px}.action small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.action .ico{font-size:20px;display:block;margin-bottom:8px}.empty{text-align:center;color:var(--muted);padding:17px 7px;font-size:12px;line-height:1.5}.nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:rgba(23,24,28,.97);border-top:1px solid var(--line);display:flex;padding:7px 6px calc(7px + env(safe-area-inset-bottom))}.nav button{flex:1;min-width:0;position:relative;background:transparent;border:0;border-radius:10px;color:var(--muted);font:750 10px system-ui;padding:7px 2px}.nav button.active{color:var(--orange);background:#ff5a1f12}.nav .ico{display:block;font-size:20px;line-height:1;margin-bottom:5px}.foot{font-size:10px;color:var(--muted);line-height:1.5;margin:13px 2px}
+.avatar{overflow:hidden}.avimg{width:100%;height:100%;object-fit:cover;display:block}
+.player{align-items:center}.pl{display:flex;align-items:center;gap:10px;min-width:0}.pi{display:flex;flex-direction:column;line-height:1.25;min-width:0}.pi b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pi small{color:var(--muted);font-size:10px}
+.pav{flex:none;width:38px;height:38px;border-radius:12px;background:#292c33;display:grid;place-items:center;font-weight:900;font-size:14px;object-fit:cover}
+select.input option{background:#1b1d22;color:#fff}
+.dot{position:absolute;top:1px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--orange);color:#fff;font-size:9px;line-height:16px;font-weight:900;display:none;padding:0 4px}.dot.show{display:block}
+.lvl{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-left:6px;background:#33363e;color:#c9ccd4;vertical-align:middle;letter-spacing:.3px}
+.lvl.l1{background:#242424;color:#b8b8b8;border:1px solid #444}.lvl.l2{background:#252c38;color:#a9c5ff;border:1px solid #435574}.lvl.l3{background:#173a31;color:#71e5c0;border:1px solid #28735e}.lvl.l4{background:#183b55;color:#80d4ff;border:1px solid #2a729c}.lvl.l5{background:#35225c;color:#c5a3ff;border:1px solid #6842a5}.lvl.l6{background:#57233f;color:#ff9dcc;border:1px solid #a04478}.lvl.l7{background:#673018;color:#ffb27b;border:1px solid #a85c2b}.lvl.l8{background:#6b2424;color:#ff9999;border:1px solid #a84444}.lvl.l9{background:#6b5317;color:#ffe28a;border:1px solid #aa8629}.lvl.l10{background:linear-gradient(110deg,#f3f3f3,#929292);color:#111;border:1px solid #fff}
+.mini{border:1px solid #3a3d46;background:#292c33;color:#fff;border-radius:9px;padding:8px 11px;font:800 11px system-ui;cursor:pointer}.mini.go{background:var(--orange);border-color:var(--orange)}.mini.red{background:#3a1f1c;border-color:#69322b;color:#ffc0b1}.mini:disabled{opacity:.45}
+.btns{display:flex;gap:6px;flex:none}.warn{color:#ffb199}.player.me{background:#ff5a1f14;border-radius:10px;padding-left:8px;padding-right:8px}.rk{flex:none;width:34px;font-weight:900;font-size:13px}
+.host{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-left:6px;background:#4a3a10;color:#ffd35c;vertical-align:middle}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 4px}.sep{height:1px;background:var(--line);margin:14px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn.red{background:#c0392b}.btn.green{background:#1f9d5c}.fl{display:block;font-size:11px;color:var(--muted);margin:10px 0 0}
+.servers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}.srvt{font-size:11px;font-weight:900;letter-spacing:1px;color:#e7c9bb;margin:0 0 8px}
+.srv{display:block;text-align:left;min-width:0;background:#15161a;border:1px solid #3a3d46;border-radius:12px;color:#fff;padding:10px 11px;cursor:pointer;font:inherit}.srv b{display:block;font-size:13px}.srv small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.srv.sel{border-color:var(--orange);background:#ff5a1f1c}.srv:disabled{opacity:.55;cursor:default}.srv.sel:disabled{opacity:1}
+.vhead{font-size:14px;font-weight:900;margin:2px 0 4px}.vhead.you{color:var(--orange)}.vsub{font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 10px}.vtimer{display:inline-block;min-width:44px;text-align:center;border:1px solid #3a3d46;background:#292c33;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900;margin-left:6px;vertical-align:middle}.vtimer.low{color:#ffb199;border-color:#69322b}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.map{display:block;width:100%;text-align:left;background:#15161a;border:1px solid #3a3d46;border-radius:12px;color:#fff;padding:12px;font:inherit;min-height:64px}.map b{display:block;font-size:14px}.map small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+button.map.avail{cursor:pointer;border-color:var(--orange);background:#ff5a1f14}.map.banned{opacity:.5}.map.banned b{text-decoration:line-through}.map.picked{border-color:var(--green);background:#45d48318}.map.picked small{color:#8ee8b6}.map.left{opacity:.6}
+.vlog{font-size:11px;color:var(--muted);margin:0 0 4px}
+.pl.tap{cursor:pointer}.pl.tap:active{opacity:.7}
+.ovl{position:fixed;inset:0;z-index:50;background:#000a;display:none;align-items:flex-end;justify-content:center}.ovl.show{display:flex}
+.sheet{width:100%;max-width:680px;max-height:88vh;overflow:auto;background:#17181c;border:1px solid #2c2f36;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.pvh{display:flex;gap:14px;align-items:center;margin:0 0 14px}.pvav{width:64px;height:64px;border-radius:18px;background:#292c33;display:grid;place-items:center;font-weight:900;font-size:24px;overflow:hidden;flex:none}.pvav img{width:100%;height:100%;object-fit:cover}
+.pvn{font-size:20px;font-weight:900;overflow:hidden;text-overflow:ellipsis}.pvx{margin-left:auto;align-self:flex-start;flex:none}
+.rdy{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-right:6px;background:#173a2a;color:#6fe0a5;vertical-align:middle}.rdy.wait{background:#33363e;color:#c9ccd4}
+
+/* UI alignment and contrast fixes */
+:root{--orange:#fff}
+.btn{background:#fff!important;color:#080808!important}
+.btn.secondary{background:#202126!important;color:#fff!important}
+.btn.ghost{color:#fff!important}
+.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;line-height:1.2;min-height:62px;padding:8px 2px}
+.nav .ico,.action .ico{display:flex;align-items:center;justify-content:center;width:24px;height:24px;margin:0 auto 2px;font-size:0;line-height:1;flex:0 0 24px}
+.nav .ico svg,.action .ico svg,.ico svg{display:block;width:22px;height:22px;stroke:currentColor;stroke-width:1.8;flex-shrink:0}
+.action{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}
+.action .ico{margin:0 0 3px;align-self:flex-start}
+.btn svg{width:18px;height:18px;vertical-align:middle;margin-right:8px}
+.nav button.active{color:#fff;background:#ffffff12}
+.status{color:#fff}
+input,textarea,button{font-family:inherit}
+
 </style>
 </head>
 <body><div class="wrap">
-<header class="top"><div><div class="brand">COUNTER <span>FLAME</span></div><div class="sub">COMPETITIVE MATCHMAKING</div></div><div class="avatar" id="avatar">CF</div></header>
+<header class="top"><div><div class="brand">RANK<span>UP</span></div><div class="sub">COMPETITIVE MATCHMAKING</div></div><div class="avatar" id="avatar">RU</div></header>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 <section class="page active" id="find">
- <div class="hero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><button class="btn" id="queueBtn" onclick="toggleQueue()"><span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="5"/><path d="m12 16 5 5M13 7h7M16.5 3.5v7"/></svg></span><span>НАЙТИ МАТЧ</span></button></div>
- <div class="grid"><div class="stat"><small>Твой рейтинг</small><div class="number" id="elo">—</div><div class="hint" id="rank">Загрузка профиля…</div></div><div class="stat"><small>Очередь</small><div class="number" id="queueCount">—/10</div><div class="hint" id="queueHint">Игроков в поиске</div></div></div>
+ <div class="hero" id="queueHero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><div id="serverBox" style="margin:0 0 14px"></div><button class="btn" id="queueBtn" onclick="toggleQueue()">НАЙТИ МАТЧ</button></div>
+ <div class="grid" id="queueStats"><div class="stat"><small>Твой рейтинг</small><div class="number" id="elo">—</div><div class="hint" id="rank">Загрузка профиля…</div></div><div class="stat"><small>Очередь</small><div class="number" id="queueCount">—/10</div><div class="hint" id="queueHint">Игроков в поиске</div></div></div>
+ <div class="card" id="partyStrip" style="display:none;margin-bottom:12px"></div>
  <div class="title">Текущий матч</div><div class="card" id="matchCard"><div class="empty">Загружаю состояние матча…</div></div>
- <div class="foot">Поиск и состояние очереди синхронизируются с сервером Counter Flame. Если API недоступен, проверь подключение бота и сервера.</div>
+ <div class="foot">Поиск и состояние очереди синхронизируются с сервером RANKUP. Если API недоступен, проверь подключение бота и сервера.</div>
 </section>
-<section class="page" id="stats"><div class="eyebrow">YOUR PERFORMANCE</div><h1 style="font-size:27px;margin:8px 0 4px">Статистика</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Показатели из базы Counter Flame.</p>
+<section class="page" id="stats"><div class="eyebrow">YOUR PERFORMANCE</div><h1 style="font-size:27px;margin:8px 0 4px">Статистика</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Показатели из базы RANKUP.</p>
  <div class="grid"><div class="stat"><small>Рейтинг ELO</small><div class="number" id="statElo">—</div><div class="hint" id="statRank">Место в рейтинге</div></div><div class="stat"><small>Матчей</small><div class="number" id="games">—</div><div class="hint">Завершённые матчи</div></div><div class="stat"><small>Победы</small><div class="number" id="wins">—</div><div class="hint">Подтверждённые</div></div><div class="stat"><small>Винрейт</small><div class="number" id="winrate">—</div><div class="hint">Процент побед</div></div></div>
  <div class="title">История матчей</div><div class="card" id="history"><div class="empty">Загрузка истории…</div></div>
 </section>
-<section class="page" id="profile"><div class="eyebrow">PLAYER CARD</div><div style="display:flex;gap:13px;align-items:center;margin:18px 0"><div class="avatar" id="bigavatar" style="width:64px;height:64px;font-size:24px;border-radius:18px">CF</div><div><h2 id="playerName" style="font-size:19px;margin:0 0 4px">Игрок</h2><div class="muted" id="playerId" style="font-size:12px">Профиль загружается…</div><div style="margin-top:7px"><span class="pill" id="profileRank">Рейтинговый игрок</span></div></div></div>
- <div class="card"><div class="row"><span class="muted">ELO</span><b id="profileElo">—</b></div><div class="row"><span class="muted">Победы / поражения</span><b id="record">—</b></div><div class="row"><span class="muted">Место в топе</span><b id="profilePlace">—</b></div></div>
- <div class="title">Быстрые действия</div><div class="actions"><button class="action" onclick="refreshState();go('stats')"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 19V5M10 19V9M16 19V3M22 19v-7"/></svg></span><b>Моя статистика</b><small>ELO и победы</small></button><button class="action" onclick="go('stats');document.getElementById('history').scrollIntoView({behavior:'smooth'})"><span class="ico"><svg viewBox="0 0 24 24"><path d="M7 3h10l3 3v15H4V3h3M8 10h8M8 14h8M8 18h5"/></svg></span><b>История матчей</b><small>Результаты</small></button><button class="action" onclick="go('stats');document.getElementById('history').scrollIntoView({behavior:'smooth'})"><span class="ico"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM7 6H3v2a4 4 0 0 0 4 4M17 6h4v2a4 4 0 0 1-4 4"/></svg></span><b>Таблица лидеров</b><small>Лучшие игроки</small></button><button class="action" onclick="go('find')"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 8h12a4 4 0 0 1 3.8 5l-1.2 4a2 2 0 0 1-3.3 1l-2.1-2H8.8l-2.1 2a2 2 0 0 1-3.3-1l-1.2-4A4 4 0 0 1 6 8Z"/><path d="M7 11v4M5 13h4M16 12h.01M19 14h.01"/></svg></span><b>Найти матч</b><small>Очередь 5 на 5</small></button></div>
+<section class="page" id="profile"><div class="eyebrow">PLAYER CARD</div><div style="display:flex;gap:13px;align-items:center;margin:18px 0"><div class="avatar" id="bigavatar" style="width:64px;height:64px;font-size:24px;border-radius:18px">RU</div><div><h2 id="playerName" style="font-size:19px;margin:0 0 4px">Игрок</h2><div class="muted" id="playerId" style="font-size:12px">Профиль загружается…</div><div style="margin-top:7px"><span class="pill" id="profileRank">Рейтинговый игрок</span></div></div></div>
+ <div class="card"><div class="row"><span class="muted">ELO</span><b id="profileElo">—</b></div><div class="row"><span class="muted">Уровень</span><b id="profileLevel">—</b></div><div class="row"><span class="muted">До следующего уровня</span><b id="levelNext">—</b></div><div class="row"><span class="muted">Победы / поражения</span><b id="record">—</b></div><div class="row"><span class="muted">Место в топе</span><b id="profilePlace">—</b></div></div>
+ <button class="btn secondary" style="margin:12px 0" onclick="shareMyProfile()">ПОДЕЛИТЬСЯ ПРОФИЛЕМ</button><div class="actions" style="margin-top:12px"><button class="action" onclick="toggleBox('editBox')"><span class="ico">✎</span><b>Изменить профиль</b><small>Ник, ID, аватарка</small></button><button class="action" onclick="toggleBox('complaintBox')"><span class="ico">🚩</span><b>Пожаловаться</b><small>Читер, баг, ошибка ELO</small></button></div>
+ <div class="card" id="editBox" style="display:none;margin-top:12px"><div class="title" style="margin:0 0 10px">Изменить профиль</div>
+  <div style="display:flex;gap:12px;align-items:center"><div class="avatar" id="editAvatar" style="width:60px;height:60px;border-radius:17px;font-size:22px;flex:none">RU</div><div style="flex:1;min-width:0"><input class="upload" type="file" id="avatarFile" accept="image/*" style="margin:0"><button class="btn ghost" style="margin-top:8px;min-height:38px" onclick="removeAvatar()">Удалить аватарку</button></div></div>
+  <label class="fl" for="editNick">Игровой ник</label><input class="input" id="editNick" maxlength="32" autocomplete="off">
+  <label class="fl" for="editGameId">Игровой ID</label><input class="input" id="editGameId" maxlength="32" autocomplete="off">
+  <button class="btn" id="saveProfileBtn" onclick="saveProfile()">СОХРАНИТЬ</button>
+  <div class="hint">Ник и ID нельзя менять во время активного матча.</div></div>
+ <div class="card" id="complaintBox" style="display:none;margin-top:12px"><div class="title" style="margin:0 0 10px">Жалоба администратору</div>
+  <label class="fl" for="cReason">Причина</label><select class="input" id="cReason"><option value="">Выбери причину…</option><option>Читер в катке</option><option>Неправильный результат или расчёт ELO</option><option>Баг в приложении</option><option>Оскорбления или токсичное поведение</option><option>Другое</option></select>
+  <label class="fl" for="cMatch">Номер матча (если есть)</label><input class="input" id="cMatch" inputmode="numeric" maxlength="9" placeholder="Например, 15">
+  <label class="fl" for="cAccused">Ник или ID игрока (если жалоба на игрока)</label><input class="input" id="cAccused" maxlength="64" autocomplete="off">
+  <label class="fl" for="cText">Что случилось</label><textarea class="textarea" id="cText" maxlength="1000" placeholder="Опиши подробно: что произошло и когда"></textarea>
+  <button class="btn" id="sendComplaintBtn" onclick="sendComplaint()">ОТПРАВИТЬ ЖАЛОБУ</button>
+  <div class="hint">Жалоба придёт администратору. Не больше 5 жалоб в час.</div></div>
+ <div class="title">Быстрые действия</div><div class="actions"><button class="action" onclick="refreshState();go('stats')"><span class="ico">▥</span><b>Моя статистика</b><small>ELO и победы</small></button><button class="action" onclick="go('stats');document.getElementById('history').scrollIntoView({behavior:'smooth'})"><span class="ico">📜</span><b>История матчей</b><small>Результаты</small></button><button class="action" onclick="go('leaderboard')"><span class="ico">🏆</span><b>Таблица лидеров</b><small>Лучшие игроки</small></button><button class="action" onclick="go('find')"><span class="ico">🎮</span><b>Найти матч</b><small>Очередь 5 на 5</small></button></div>
  <div class="title">Топ игроков</div><div class="card" id="top"><div class="empty">Загрузка рейтинга…</div></div>
 </section>
-</div><nav class="nav"><button class="active" data-page="find"><span class="ico">⌕</span>Найти матч</button><button data-page="stats"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 19V5M10 19V9M16 19V3M22 19v-7"/></svg></span>Статистика</button><button data-page="profile"><span class="ico">◉</span>Профиль</button></nav>
+<section class="page" id="leaderboard"><div class="eyebrow">TOP PLAYERS</div><h1 style="font-size:27px;margin:8px 0 4px">Таблица лидеров</h1><p class="muted" id="lbMe" style="font-size:12px;margin:0 0 15px">Лучшие игроки по рейтингу.</p>
+ <div class="card" id="lbList"><div class="empty">Загрузка таблицы…</div></div>
+ <button class="btn ghost" style="margin-top:12px" onclick="go('profile')">← НАЗАД В ПРОФИЛЬ</button>
+</section>
+<section class="page" id="friends"><div class="eyebrow">SOCIAL</div><h1 style="font-size:27px;margin:8px 0 4px">Друзья и пати</h1><p class="muted" style="font-size:12px;margin:0 0 6px">Добавляй друзей и играйте вместе. В пати можно звать друзей, у которых разница в рейтинге не больше <b id="eloLimit">300</b> ELO.</p>
+ <div id="partyInvites"></div>
+ <div class="title">Моя пати</div><div class="card" id="partyCard"><div class="empty">Загрузка…</div></div>
+ <div id="reqIn"></div>
+ <div class="title">Добавить друга</div><div class="card"><label class="fl" for="friendQ" style="margin-top:0">Игровой ник или ID</label><input class="input" id="friendQ" maxlength="64" autocomplete="off" placeholder="Например, Fox или 937371"><button class="btn" id="friendSearchBtn" onclick="searchFriends()">НАЙТИ ИГРОКА</button><div id="friendResults"></div></div>
+ <div class="title">Мои друзья</div><div class="card" id="friendList"><div class="empty">Загрузка…</div></div>
+ <div id="reqOut"></div>
+</section>
+<section class="page" id="admin"><div class="eyebrow">ADMIN</div><h1 style="font-size:27px;margin:8px 0 4px">Панель администратора</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Бан, разбан и корректировка ELO. Все действия записываются в журнал.</p>
+ <div class="card"><label class="fl" for="adminQ" style="margin-top:0">Поиск игрока</label><input class="input" id="adminQ" maxlength="64" autocomplete="off" placeholder="Ник, игровой ID, Telegram ID или @username"><button class="btn" id="adminSearchBtn" onclick="adminSearch()">НАЙТИ</button><div id="adminResults"></div></div>
+ <div class="card" id="adminPlayer" style="display:none;margin-top:12px"></div>
+ <div class="row" style="border:0;padding:0;margin:22px 0 10px"><div class="title" style="margin:0">Активные матчи</div><button class="mini" onclick="loadAdminMatches()">Обновить</button></div><div class="card" id="adminMatches"><div class="empty">Загрузка матчей…</div></div>
+ <div class="title">Последние действия</div><div class="card" id="adminLog"><div class="empty">Загрузка журнала…</div></div>
+</section>
+</div><nav class="nav"><button class="active" data-page="find"><span class="ico" data-lucide="search"></span>Найти матч</button><button data-page="stats"><span class="ico" data-lucide="chart-no-axes-column"></span>Статистика</button><button data-page="friends"><span class="ico" data-lucide="users"></span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico" data-lucide="user-round"></span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico" data-lucide="shield-check"></span>Админ</button></nav>
+<div class="ovl" id="pv" onclick="if(event.target===this)closePlayer()"><div class="sheet" id="pvBody"></div></div>
 <script>
 // IMPORTANT: set this to your public HTTPS API URL after starting Cloudflare Tunnel.
 // Example: const API_BASE = 'https://your-name.trycloudflare.com';
-const API_BASE = 'https://des-genesis-signing-ban.trycloudflare.com';
+const API_BASE = 'https://bottles-phrase-tri-disabilities.trycloudflare.com';
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#101114'); tg.setBackgroundColor('#101114'); } catch(e){} }
 const initData = tg?.initData || '';
 let state = null;
+let selServer = null, lastMatchSig = null, vetoDeadline = null, vetoPolled = false;
+try { selServer = localStorage.getItem('rankupServer'); } catch (e) {}
 function showStatus(message, error=false){const el=document.getElementById('status');el.textContent=message;el.className='status show'+(error?' error':'');}
 function clearStatus(){document.getElementById('status').className='status';}
 function buzz(){try{tg?.HapticFeedback?.impactOccurred('light')}catch(e){}}
-function go(page){buzz();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));clearStatus();}
+function go(page){buzz();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));const navPage=page==='leaderboard'?'profile':page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===navPage));clearStatus();window.scrollTo({top:0});if(page==='leaderboard')loadLeaderboard();if(page==='friends')refreshSocial();if(page==='admin')loadAdmin();}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 const apiConfigured = API_BASE.startsWith('https://') && !API_BASE.includes('REPLACE_WITH');
 async function request(path, options={}) {
@@ -51,39 +125,107 @@ async function request(path, options={}) {
  if(!response.ok) throw new Error(data.detail||'Ошибка сервера ('+response.status+').');
  return data;
 }
+const isPending=m=>!!(m&&m.veto&&(m.veto.phase==='ban'||m.veto.phase==='pick'));
+function renderServers(s,notLeader){
+ const box=document.getElementById('serverBox'),list=s.servers||[];if(!list.length){box.innerHTML='';return;}
+ if(s.queue.joined&&s.queue.server)selServer=s.queue.server;
+ else if(!list.some(x=>x.key===selServer))selServer=list[0].key;
+ const locked=!!s.queue.joined||!!s.match||notLeader,counts=s.queue.counts||{};
+ box.innerHTML='<div class="srvt">🌍 СЕРВЕР</div><div class="servers">'+list.map(x=>'<button class="srv'+(x.key===selServer?' sel':'')+'" '+(locked?'disabled ':'')+'onclick="pickServer(\''+x.key+'\')"><b>'+escapeHtml(x.city)+'</b><small>'+escapeHtml(x.region)+' · '+(counts[x.key]||0)+' в поиске</small></button>').join('')+'</div><div class="hint">Подбор идёт только среди игроков того же сервера.'+(notLeader?' Сервер выбирает лидер пати.':'')+'</div>';
+}
+function pickServer(key){
+ if(state&&(state.queue.joined||state.match))return;
+ selServer=key;try{localStorage.setItem('rankupServer',key);}catch(e){}buzz();
+ if(state){renderServers(state,!!(state.party&&state.party.size>1&&!state.party.is_leader));document.getElementById('queueCount').textContent=((state.queue.counts||{})[key]||0)+'/'+state.queue.needed;}
+}
+function setVetoDeadline(m){
+ const v=m&&m.veto;
+ if(v&&(v.phase==='ban'||v.phase==='pick')&&v.seconds_left!=null){vetoDeadline=Date.now()+v.seconds_left*1000;vetoPolled=false;}else vetoDeadline=null;
+}
+function tickVeto(){
+ const el=document.getElementById('vetoTimer');if(!el||vetoDeadline==null)return;
+ const left=Math.max(0,Math.ceil((vetoDeadline-Date.now())/1000));
+ el.textContent=left+' с';el.classList.toggle('low',left<=10);
+ if(left===0&&!vetoPolled){vetoPolled=true;setTimeout(refreshState,1200);}
+}
+setInterval(tickVeto,1000);
+function vetoBlock(m){
+ const v=m.veto;if(!v)return '';
+ const tn=t=>escapeHtml(v.team_names[String(t)]),cap=t=>escapeHtml((v.captains[String(t)]||{}).game_nick||'—');
+ const pending=v.phase==='ban'||v.phase==='pick',ban=v.phase==='ban';
+ let head,sub='';
+ if(v.phase==='done'){head='<div class="vhead">🗺 Карта выбрана: <span class="orange">'+escapeHtml(v.final_map)+'</span></div>';}
+ else{
+  const timer=v.seconds_left!=null?'<span class="vtimer" id="vetoTimer">'+v.seconds_left+' с</span>':'';
+  if(v.your_turn)head='<div class="vhead you">'+(ban?'Твой ход — забань карту':'Твой ход — выбери карту для матча')+timer+'</div>';
+  else head='<div class="vhead">Ход '+tn(v.turn_team)+': капитан '+cap(v.turn_team)+(ban?' банит карту':' выбирает карту')+timer+'</div>';
+  if(ban)sub='Первой банит '+tn(v.first_team)+' (выпало случайно). Капитаны банят по очереди по одной карте, останется две.';
+  else{const a=v.avg_elo['1'],b=v.avg_elo['2'];
+   sub=a===b?'Средний ELO команд равен ('+a+'), карту выбирает капитан '+tn(v.picker_team)+' — команды, которая банила второй.':'У '+tn(v.picker_team)+' средний ELO ниже ('+v.avg_elo[String(v.picker_team)]+' против '+v.avg_elo[String(v.picker_team===1?2:1)]+'), поэтому карту из двух оставшихся выбирает её капитан '+cap(v.picker_team)+'.';}
+  if(!v.you_captain)sub+=' Ты не капитан — ждёшь решения капитанов.';
+  else if(!v.your_turn)sub+=' Ты капитан — дождись своего хода.';
+ }
+ const maps=v.maps.map(x=>{
+  let cls='map '+x.status,small='';
+  if(x.status==='banned')small='Бан · '+tn(x.by);
+  else if(x.status==='picked')small='✅ Выбрана';
+  else if(x.status==='left')small='Не выбрана';
+  else small=v.your_turn?(ban?'Нажми, чтобы забанить':'Нажми, чтобы выбрать'):(pending&&!ban?'Осталась':'В игре');
+  const inner='<b>'+escapeHtml(x.name)+'</b><small>'+small+'</small>';
+  if(x.status==='available'&&v.your_turn)return '<button class="'+cls+' avail" onclick="vetoMap(\''+escapeHtml(x.name)+'\')">'+inner+'</button>';
+  return '<div class="'+cls+'">'+inner+'</div>';
+ }).join('');
+ return '<div class="sep"></div>'+head+(sub?'<div class="vsub">'+sub+'</div>':'')+'<div class="maps">'+maps+'</div>'+'<div class="sep"></div>';
+}
+async function vetoMap(name){
+ const m=state?.match;if(!m||!m.veto||!m.veto.your_turn)return;
+ const ban=m.veto.phase==='ban';
+ if(!await ask((ban?'Забанить карту ':'Играть на карте ')+name+'?'))return;
+ try{const r=await post('/api/match/veto',{match_id:m.id,map:name});notify(r.message);await refreshState();}
+ catch(e){notify(e.message,true);await refreshState();}
+}
 function renderMatch(m){
  const box=document.getElementById('matchCard');
  if(!m){box.innerHTML='<div class="empty">Активного матча нет.<br>Нажми «Найти матч», чтобы встать в очередь.</div>';return;}
- const team=(name,players)=>'<div class="team"><h3>'+name+'</h3>'+players.map(p=>'<div class="player"><span>'+escapeHtml(p.game_nick)+'</span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
- let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'+team('🟦 Команда 1',m.team1)+team('🟥 Команда 2',m.team2);
+ const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
+ const pending=isPending(m);
+ let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':pending?'Выбор карты':'Игра идёт')+'</span></div>'+(m.server_label?'<div class="row"><span class="muted">🌍 Сервер</span><b>'+escapeHtml(m.server_label)+'</b></div>':'')+(m.map?'<div class="row"><span class="muted">🗺 Карта</span><b>'+escapeHtml(m.map)+'</b></div>':'')+vetoBlock(m)+team('🟦 '+(m.team1_name||'Команда 1'),m.team1)+team('🟥 '+(m.team2_name||'Команда 2'),m.team2);
  if(m.room_data) html+='<div class="row"><span>Данные комнаты</span><b>'+escapeHtml(m.room_data)+'</b></div>';
- if(m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
- if((m.status==='active'||m.status==='review')&&m.room_data) html+='<div class="title" style="margin-top:15px">Отправить результат</div><input class="upload" type="file" id="resultPhoto" accept="image/*"><button class="btn secondary" onclick="uploadResult('+m.id+')"><span class="btn-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><span>ОТПРАВИТЬ СКРИНШОТ</span></button>';
+ if(pending)html+='<div class="hint" style="margin-top:12px">Данные комнаты и отправка скриншота откроются, когда капитаны выберут карту.</div>';
+ if(!pending&&m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><div class="hint" style="margin:6px 0">⚠️ <b>Сначала создай комнату с обязательными настройками:</b><br>• Матч → Победных раундов: 13 (остальное по умолчанию)<br>• Доступ → Макс. кол-во игроков: 10 (остальное по умолчанию)<br>• Турнир → Не начинать матч, пока не соберётся состав: Вкл<br>• Турнир → Нужно игроков: 10<br>• Турнир → Замок составов: Вкл</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
+ if(!pending&&(m.status==='active'||m.status==='review')){if(m.room_data)html+='<div class="title" style="margin-top:15px">Отправить результат</div><input class="upload" type="file" id="resultPhoto" accept="image/*"><button class="btn secondary" onclick="uploadResult('+m.id+')">ОТПРАВИТЬ СКРИНШОТ</button>';else html+='<div class="hint" style="margin-top:14px">Отправка результата откроется после того, как хост сохранит данные комнаты.</div>';}
  box.innerHTML=html;
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function refreshState(){
  try{
   const s=await request('/api/state');state=s;clearStatus();
-  const p=s.player, initial=(p.game_nick||'C').trim()[0]?.toUpperCase()||'C';
-  document.getElementById('avatar').textContent=initial;document.getElementById('bigavatar').textContent=initial;
-  document.getElementById('elo').textContent=p.elo;document.getElementById('rank').textContent='Место в топе #'+s.rank;
-  document.getElementById('queueCount').textContent=s.queue.size+'/'+s.queue.needed;
-  document.getElementById('queueHint').textContent=s.queue.joined?'Ты в очереди — нажми, чтобы выйти':'Ожидание игроков';
-  const qb=document.getElementById('queueBtn');qb.innerHTML=s.queue.joined?'<span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span>ВЫЙТИ ИЗ ОЧЕРЕДИ</span>':'<span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="12" r="5"/><path d="m12 16 5 5M13 7h7M16.5 3.5v7"/></svg></span><span>НАЙТИ МАТЧ</span>'; 
-  qb.disabled=!!s.match;
-  document.getElementById('statElo').textContent=p.elo;document.getElementById('statRank').textContent='Место #'+s.rank;
+  const p=s.player, initial=(p.game_nick||'R').trim()[0]?.toUpperCase()||'R';
+  setAvatar(document.getElementById('avatar'),p,initial);setAvatar(document.getElementById('bigavatar'),p,initial);
+  document.getElementById('elo').textContent=p.elo;document.getElementById('rank').textContent='Место #'+s.rank+' · Уровень '+p.level;
+  const party=s.party,multi=!!(party&&party.size>1),notLeader=multi&&!party.is_leader;
+  renderServers(s,notLeader);
+  document.getElementById('queueCount').textContent=((s.queue.counts||{})[selServer]||0)+'/'+s.queue.needed;
+  document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
+  const qb=document.getElementById('queueBtn');qb.textContent=s.queue.joined?'✕ ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'НАЙТИ МАТЧ ПАТИ':'НАЙТИ МАТЧ');
+  if(multi&&party.is_leader&&!s.queue.joined&&!party.all_ready){qb.textContent='⏳ ЖДЁМ ГОТОВНОСТЬ ('+party.ready_count+'/'+party.size+')';document.getElementById('queueHint').textContent='Поиск начнётся, когда все нажмут «Готов»';}
+  qb.disabled=queueDisabled(s);renderPartyStrip(party);
+  document.getElementById('navAdmin').style.display=s.is_admin?'':'none';const dot=document.getElementById('friendsDot');dot.textContent=s.badge;dot.classList.toggle('show',s.badge>0);
+  document.getElementById('statElo').textContent=p.elo;document.getElementById('statRank').textContent='Место #'+s.rank+' · Уровень '+p.level;
   const games=p.wins+p.losses;document.getElementById('games').textContent=games;document.getElementById('wins').textContent=p.wins;document.getElementById('winrate').textContent=games?Math.round(p.wins/games*100)+'%':'—';
-  document.getElementById('playerName').textContent=p.game_nick;document.getElementById('playerId').textContent='Игровой ID: '+p.game_id;document.getElementById('profileRank').textContent='Игрок #'+s.rank;document.getElementById('profileElo').textContent=p.elo;document.getElementById('record').textContent=p.wins+' / '+p.losses;document.getElementById('profilePlace').textContent='#'+s.rank;
-  renderMatch(s.match);
+  document.getElementById('playerName').textContent=p.game_nick;document.getElementById('playerId').textContent='Игровой ID: '+p.game_id;document.getElementById('profileRank').textContent='Игрок #'+s.rank+' · LVL '+p.level;document.getElementById('profileElo').textContent=p.elo;document.getElementById('profileLevel').textContent=p.level+' из 10';document.getElementById('levelNext').textContent=p.level_next?('ещё '+(p.level_next-p.elo)+' ELO'):'максимальный';document.getElementById('record').textContent=p.wins+' / '+p.losses;document.getElementById('profilePlace').textContent='#'+s.rank;
+  const queueVisible=!s.match;document.getElementById('queueHero').style.display=queueVisible?'':'none';document.getElementById('queueStats').style.display=queueVisible?'':'none';
+  setVetoDeadline(s.match);
+  const sig=JSON.stringify(s.match,(k,v)=>k==='seconds_left'?undefined:v);
+  if(sig!==lastMatchSig){lastMatchSig=sig;renderMatch(s.match);}
   document.getElementById('history').innerHTML=s.history.length?s.history.map(x=>'<div class="item"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+'</span><b class="'+(x.delta>0?'orange':'')+'">'+(x.status==='finished'?(x.delta>0?'+':'')+x.delta+' ELO':'—')+'</b></div>').join(''):'<div class="empty">История матчей пока пуста.</div>';
-  document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span>'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+' '+escapeHtml(x.game_nick)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
- }catch(e){showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
+  document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span class="tap" style="cursor:pointer" onclick="openPlayer('+x.tg_id+')">'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+' '+escapeHtml(x.game_nick)+lvl(x.level)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
+ }catch(e){lastMatchSig=null;showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
 }
 async function toggleQueue(){
  const b=document.getElementById('queueBtn');b.disabled=true;
- try{const path=state?.queue?.joined?'/api/queue/leave':'/api/queue/join';const r=await request(path,{method:'POST'});showStatus(r.message);await refreshState();}
- catch(e){showStatus(e.message,true);}finally{b.disabled=false;}
+ try{const joined=state?.queue?.joined;if(!joined&&!selServer){showStatus('Выбери сервер для поиска матча.',true);return;}const r=await post(joined?'/api/queue/leave':'/api/queue/join',joined?{}:{server:selServer});showStatus(r.message);await refreshState();}
+ catch(e){showStatus(e.message,true);}finally{b.disabled=state?queueDisabled(state):false;}
 }
 async function saveRoom(id){
  const value=document.getElementById('roomData')?.value?.trim();if(!value){showStatus('Введи данные комнаты.',true);return;}
@@ -96,7 +238,255 @@ async function uploadResult(id){
  try{const r=await request('/api/match/screenshot',{method:'POST',body:form});showStatus(r.message);input.value='';await refreshState();}
  catch(e){showStatus(e.message,true);}
 }
-if(tg?.initDataUnsafe?.user){const u=tg.initDataUnsafe.user;document.getElementById('avatar').textContent=(u.first_name||'C')[0].toUpperCase();}
+if(window.lucide)window.lucide.createIcons();
+if(tg?.initDataUnsafe?.user){const u=tg.initDataUnsafe.user;document.getElementById('avatar').textContent=(u.first_name||'R')[0].toUpperCase();}
+// ---- аватарки, профиль, жалобы ----
+async function shareMyProfile(){
+ if(!state?.player){notify('Профиль ещё загружается.',true);return;}
+ const p=state.player, w=900,h=1120,canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const c=canvas.getContext('2d');
+ const bg=c.createLinearGradient(0,0,w,h);bg.addColorStop(0,'#191919');bg.addColorStop(1,'#050505');c.fillStyle=bg;c.fillRect(0,0,w,h);
+ c.strokeStyle='#454545';c.lineWidth=2;c.strokeRect(28,28,w-56,h-56);
+ c.fillStyle='#fff';c.font='900 42px system-ui';c.fillText('RANKUP',62,92);c.fillStyle='#999';c.font='700 16px system-ui';c.fillText('COMPETITIVE PLAYER CARD',64,123);
+ c.fillStyle='#202020';c.fillRect(60,160,780,260);c.strokeStyle='#3b3b3b';c.strokeRect(60,160,780,260);
+ const drawDetails=()=>{c.fillStyle='#fff';c.font='900 36px system-ui';c.fillText(String(p.game_nick||'Игрок').slice(0,22),250,230);c.fillStyle='#aaa';c.font='20px system-ui';c.fillText('GAME ID  '+String(p.game_id||'—'),252,272);c.fillStyle='#fff';c.font='900 27px system-ui';c.fillText('LEVEL '+p.level,252,325);c.fillStyle='#aaa';c.font='17px system-ui';c.fillText('RANK #'+(state.rank||'—'),252,360);};
+ c.fillStyle='#303030';c.beginPath();c.roundRect(90,190,130,130,24);c.fill();c.fillStyle='#fff';c.font='900 56px system-ui';c.textAlign='center';c.fillText(String(p.game_nick||'R').trim()[0].toUpperCase(),155,273);c.textAlign='left';
+ if(p.avatar){try{const im=new Image();im.crossOrigin='anonymous';im.src=API_BASE+p.avatar;await new Promise((res,rej)=>{im.onload=res;im.onerror=rej});c.save();c.beginPath();c.roundRect(90,190,130,130,24);c.clip();c.drawImage(im,90,190,130,130);c.restore();}catch(e){}}
+ drawDetails();
+ const stats=[['ELO',p.elo],['WINS',p.wins],['LOSSES',p.losses],['WIN RATE',(p.wins+p.losses)?Math.round(p.wins/(p.wins+p.losses)*100)+'%':'—']];
+ stats.forEach((it,i)=>{const x=60+(i%2)*400,y=470+Math.floor(i/2)*150;c.fillStyle='#171717';c.fillRect(x,y,380,120);c.strokeStyle='#383838';c.strokeRect(x,y,380,120);c.fillStyle='#999';c.font='700 17px system-ui';c.fillText(it[0],x+24,y+38);c.fillStyle='#fff';c.font='900 40px system-ui';c.fillText(String(it[1]??'—'),x+24,y+88);});
+ c.fillStyle='#777';c.font='16px system-ui';c.fillText('RANKED MATCHMAKING  •  RANKUP',62,1030);
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob){notify('Не удалось создать карточку.',true);return;}const file=new File([blob],'rankup-profile.png',{type:'image/png'});
+ if(navigator.canShare?.({files:[file]})){try{await navigator.share({title:'Мой профиль RANKUP',files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='rankup-profile.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);notify('Карточка профиля создана — изображение сохранено.');
+}
+function initialOf(p){return ((p&&p.game_nick)||'?').trim()[0]?.toUpperCase()||'?';}
+function avatarTag(p){return p.avatar?'<img class="pav" alt="" src="'+API_BASE+p.avatar+'">':'<span class="pav">'+escapeHtml(initialOf(p))+'</span>';}
+function setAvatar(el,p,initial){if(p&&p.avatar){el.innerHTML='<img class="avimg" alt="" src="'+API_BASE+p.avatar+'">';}else{el.textContent=initial;}}
+function notify(message,error=false){showStatus(message,error);window.scrollTo({top:0,behavior:'smooth'});}
+function fillEdit(p){document.getElementById('editNick').value=p.game_nick||'';document.getElementById('editGameId').value=p.game_id||'';document.getElementById('avatarFile').value='';setAvatar(document.getElementById('editAvatar'),p,initialOf(p));}
+function toggleBox(id){buzz();const el=document.getElementById(id);const open=el.style.display==='none';el.style.display=open?'block':'none';if(open&&id==='editBox'&&state)fillEdit(state.player);if(open)el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function resizeToJpeg(file,size){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{try{const s=Math.min(img.width,img.height),c=document.createElement('canvas');c.width=c.height=size;c.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);c.toBlob(b=>{URL.revokeObjectURL(url);b?resolve(b):reject(new Error('Не удалось обработать картинку.'));},'image/jpeg',0.85);}catch(e){URL.revokeObjectURL(url);reject(e);}};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Не удалось прочитать картинку. Выбери JPG или PNG.'));};img.src=url;});}
+async function saveProfile(){
+ const p=state?.player;if(!p)return;
+ const nick=document.getElementById('editNick').value.trim(),gid=document.getElementById('editGameId').value.trim(),file=document.getElementById('avatarFile').files[0];
+ const btn=document.getElementById('saveProfileBtn');btn.disabled=true;
+ try{
+  const done=[];
+  if(nick!==p.game_nick||gid!==p.game_id){const r=await request('/api/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game_nick:nick,game_id:gid})});done.push(r.message);}
+  if(file){const blob=await resizeToJpeg(file,256),form=new FormData();form.append('photo',blob,'avatar.jpg');const r=await request('/api/profile/avatar',{method:'POST',body:form});done.push(r.message);}
+  if(!done.length){notify('Ничего не изменено.');return;}
+  await refreshState();if(state)fillEdit(state.player);notify(done.join(' '));
+ }catch(e){notify(e.message,true);}finally{btn.disabled=false;}
+}
+async function removeAvatar(){
+ try{const r=await request('/api/profile/avatar/delete',{method:'POST'});await refreshState();if(state)fillEdit(state.player);notify(r.message);}
+ catch(e){notify(e.message,true);}
+}
+async function sendComplaint(){
+ const reason=document.getElementById('cReason').value,text=document.getElementById('cText').value.trim(),match=document.getElementById('cMatch').value.trim(),accused=document.getElementById('cAccused').value.trim();
+ if(!reason){notify('Выбери причину жалобы.',true);return;}
+ if(text.length<10){notify('Опиши, что произошло (минимум 10 символов).',true);return;}
+ if(match&&!/^[0-9]{1,9}$/.test(match)){notify('Номер матча — только цифры.',true);return;}
+ const body={reason,text};if(match)body.match_id=Number(match);if(accused)body.accused=accused;
+ const btn=document.getElementById('sendComplaintBtn');btn.disabled=true;
+ try{
+  const r=await request('/api/complaint',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  ['cReason','cText','cMatch','cAccused'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('complaintBox').style.display='none';notify(r.message);
+ }catch(e){notify(e.message,true);}finally{btn.disabled=false;}
+}
+
+// ---- уровни, пати, друзья, таблица лидеров, админка ----
+function lvl(n){return '<span class="lvl l'+n+'">LVL '+n+'</span>';}
+function queueDisabled(s){const p=s.party;return !!s.match||!!(p&&p.size>1&&(!p.is_leader||(!s.queue.joined&&!p.all_ready)));}
+function pRow(p,right,sub,opts){opts=opts||{};return '<div class="player'+(opts.me?' me':'')+'"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+(opts.prefix||'')+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>'+(sub||('ID '+escapeHtml(p.game_id)+' · '+p.elo+' ELO'))+'</small></span></span>'+(right||'')+'</div>';}
+function ask(msg){return new Promise(r=>{if(tg&&tg.showConfirm){try{tg.showConfirm(msg,ok=>r(!!ok));return;}catch(e){}}r(window.confirm(msg));});}
+async function post(path,body){return request(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});}
+function renderPartyStrip(party){
+ const box=document.getElementById('partyStrip');
+ if(!party||party.size<2){box.style.display='none';box.innerHTML='';return;}
+ box.style.display='block';
+ const pill=party.in_queue?'В поиске':(party.is_leader?(party.all_ready?'Все готовы':'Готовы '+party.ready_count+'/'+party.size):(party.you_ready?'Ты готов':'Нажми «Готов»'));
+ const readyBtn=party.is_leader?'':'<button class="btn'+(party.you_ready?' ghost':'')+'" style="margin-top:10px;min-height:44px" onclick="setReady('+(party.you_ready?'false':'true')+')">'+(party.you_ready?'✕ ОТМЕНИТЬ ГОТОВНОСТЬ':'✅ Я ГОТОВ')+'</button>';
+ box.innerHTML='<div class="row" style="padding-top:0"><b>👥 Пати '+party.size+'/'+party.max+'</b><span class="pill">'+pill+'</span></div>'+party.members.map(m=>pRow(m,readyTag(m,party),(m.tg_id===party.leader_id?'👑 Лидер · ':'')+m.elo+' ELO')).join('')+'<div class="hint">Вы попадёте в одну команду. Матч начнётся, когда все игроки пати будут готовы.</div>'+readyBtn;
+}
+// --- таблица лидеров ---
+async function loadLeaderboard(){
+ const box=document.getElementById('lbList');
+ try{
+  const r=await request('/api/leaderboard');
+  document.getElementById('lbMe').textContent='Ты на месте #'+r.me.rank+' · '+r.me.elo+' ELO · уровень '+r.me.level;
+  box.innerHTML=r.players.length?r.players.map(x=>pRow(x,'<b>'+x.elo+'</b>',x.wins+' побед · '+x.losses+' поражений',{me:x.me,prefix:'<span class="rk">'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+'</span>'})).join(''):'<div class="empty">Игроков пока нет.</div>';
+ }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+}
+// --- друзья и пати ---
+let social=null,lastFriendQuery='';
+async function refreshSocial(){
+ try{social=await request('/api/social');renderSocial();}catch(e){showStatus(e.message,true);}
+}
+function renderSocial(){
+ const s=social;if(!s)return;
+ document.getElementById('eloLimit').textContent=s.elo_limit;
+ document.getElementById('partyInvites').innerHTML=s.party_invites.length?'<div class="title">Приглашения в пати</div><div class="card">'+s.party_invites.map(i=>pRow(i.from,'<span class="btns"><button class="mini go" onclick="respondParty('+i.party_id+',true)">Принять</button><button class="mini" onclick="respondParty('+i.party_id+',false)">✕</button></span>','Зовёт в пати · '+i.from.elo+' ELO')).join('')+'</div>':'';
+ const pt=s.party,pc=document.getElementById('partyCard');
+ if(!pt){pc.innerHTML='<div class="empty">Ты играешь один.<br>Нажми «В пати» у друга ниже — пати создастся автоматически.</div>';}
+ else{
+  pc.innerHTML='<div class="row" style="padding-top:0"><b>Пати '+pt.size+'/'+pt.max+'</b><span class="pill">'+(pt.in_queue?'В поиске матча':(pt.is_leader?(pt.all_ready?'Все готовы':'Готовы '+pt.ready_count+'/'+pt.size):(pt.you_ready?'Ты готов':'Нажми «Готов»')))+'</span></div>'
+   +pt.members.map(m=>{const lead=m.tg_id===pt.leader_id;const kick=pt.is_leader&&!lead&&!pt.in_queue?'<button class="mini red" onclick="kickMember('+m.tg_id+')">Исключить</button>':'';return pRow(m,readyTag(m,pt)+kick,(lead?'👑 Лидер · ':'')+'ID '+escapeHtml(m.game_id)+' · '+m.elo+' ELO');}).join('')
+   +'<div class="hint">Разница рейтинга в пати: '+pt.spread+' из '+pt.elo_limit+' ELO. Все игроки нажимают «Готов», затем лидер запускает поиск на вкладке «Найти матч».</div>'
+   +(pt.is_leader?'':'<button class="btn'+(pt.you_ready?' ghost':'')+'" style="margin-top:10px;min-height:44px" onclick="setReady('+(pt.you_ready?'false':'true')+')">'+(pt.you_ready?'✕ ОТМЕНИТЬ ГОТОВНОСТЬ':'✅ Я ГОТОВ')+'</button>')
+   +'<button class="btn ghost" style="margin-top:10px;min-height:40px" onclick="leaveParty()">'+(pt.is_leader?'РАСПУСТИТЬ ПАТИ':'ВЫЙТИ ИЗ ПАТИ')+'</button>';
+ }
+ document.getElementById('reqIn').innerHTML=s.requests_in.length?'<div class="title">Заявки в друзья</div><div class="card">'+s.requests_in.map(p=>pRow(p,'<span class="btns"><button class="mini go" onclick="respondFriend('+p.tg_id+',true)">Принять</button><button class="mini" onclick="respondFriend('+p.tg_id+',false)">✕</button></span>')).join('')+'</div>':'';
+ document.getElementById('friendList').innerHTML=s.friends.length?s.friends.map(f=>pRow(f,'<span class="btns"><button class="mini go" '+(f.can_invite?'':'disabled ')+'onclick="inviteParty('+f.tg_id+')">В пати</button><button class="mini" onclick="removeFriend('+f.tg_id+')" aria-label="Удалить из друзей">✕</button></span>','ID '+escapeHtml(f.game_id)+' · '+f.elo+' ELO'+(f.invite_block?'<br><span class="warn">'+escapeHtml(f.invite_block)+'</span>':''))).join(''):'<div class="empty">Друзей пока нет.<br>Найди игрока по нику или ID выше.</div>';
+ document.getElementById('reqOut').innerHTML=s.requests_out.length?'<div class="title">Отправленные заявки</div><div class="card">'+s.requests_out.map(p=>pRow(p,'<button class="mini" onclick="removeFriend('+p.tg_id+')">Отменить</button>','Ждёт ответа')).join('')+'</div>':'';
+}
+async function socialAct(path,body){
+ try{const r=await post(path,body);notify(r.message);await refreshSocial();refreshState();if(lastFriendQuery)searchFriends(true);return r;}
+ catch(e){notify(e.message,true);}
+}
+async function searchFriends(silent){
+ const q=document.getElementById('friendQ').value.trim(),box=document.getElementById('friendResults');
+ if(!q){if(!silent)notify('Введи ник или игровой ID.',true);return;}
+ lastFriendQuery=q;const btn=document.getElementById('friendSearchBtn');btn.disabled=true;
+ try{
+  const r=await request('/api/friends/search?q='+encodeURIComponent(q));
+  const right=p=>p.relation==='friend'?'<span class="pill">Друг</span>':p.relation==='pending_out'?'<span class="pill">Заявка отправлена</span>':p.relation==='pending_in'?'<button class="mini go" onclick="respondFriend('+p.tg_id+',true)">Принять</button>':'<button class="mini go" onclick="addFriend('+p.tg_id+')">＋ Добавить</button>';
+  box.innerHTML='<div class="sep"></div>'+(r.players.length?r.players.map(p=>pRow(p,right(p))).join(''):'<div class="empty">Игрок не найден. Проверь ник или ID.</div>');
+ }catch(e){if(!silent)notify(e.message,true);}finally{btn.disabled=false;}
+}
+document.getElementById('friendQ').addEventListener('keydown',e=>{if(e.key==='Enter')searchFriends();});
+const addFriend=id=>socialAct('/api/friends/request',{tg_id:id});
+const respondFriend=(id,accept)=>socialAct('/api/friends/respond',{tg_id:id,accept});
+async function removeFriend(id){if(await ask('Удалить из друзей / отменить заявку?'))socialAct('/api/friends/remove',{tg_id:id});}
+function readyTag(m,party){
+ if(m.tg_id===party.leader_id)return '';
+ return m.ready?'<span class="rdy">✓ ГОТОВ</span>':'<span class="rdy wait">ЖДЁМ</span>';
+}
+async function setReady(v){
+ try{const r=await post('/api/party/ready',{ready:v});notify(r.message);}catch(e){notify(e.message,true);}
+ await refreshState();refreshSocial();
+}
+// --- профиль игрока ---
+function closePlayer(){document.getElementById('pv').classList.remove('show');}
+async function openPlayer(id,msg){
+ const box=document.getElementById('pvBody');buzz();document.getElementById('pv').classList.add('show');
+ if(!msg)box.innerHTML='<div class="empty">Загрузка профиля…</div>';
+ try{renderPlayer(await request('/api/player/'+id),msg);}
+ catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div><button class="btn ghost" style="margin-top:12px" onclick="closePlayer()">ЗАКРЫТЬ</button>';}
+}
+function renderPlayer(r,msg){
+ const p=r.player,box=document.getElementById('pvBody');
+ const av=p.avatar?'<img alt="" src="'+API_BASE+p.avatar+'">':escapeHtml(initialOf(p));
+ const act=r.relation==='me'?'<div class="hint" style="text-align:center">Это твой профиль</div>'
+  :r.relation==='friend'?'<div class="row"><span class="pill">🤝 Вы друзья</span><button class="mini" onclick="pvDo(\'/api/friends/remove\','+p.tg_id+')">Удалить из друзей</button></div>'
+  :r.relation==='pending_out'?'<div class="row"><span class="pill">Заявка отправлена</span><button class="mini" onclick="pvDo(\'/api/friends/remove\','+p.tg_id+')">Отменить</button></div>'
+  :r.relation==='pending_in'?'<button class="btn" onclick="pvDo(\'/api/friends/respond\','+p.tg_id+',true)">ПРИНЯТЬ ЗАЯВКУ В ДРУЗЬЯ</button>'
+  :'<button class="btn" onclick="pvDo(\'/api/friends/request\','+p.tg_id+')">＋ ДОБАВИТЬ В ДРУЗЬЯ</button>';
+ const next=p.level_next?'До LVL '+(p.level+1)+': ещё '+(p.level_next-p.elo)+' ELO':'Максимальный уровень';
+ const recent=r.recent.length?r.recent.map(x=>'<div class="item"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+'</span><b class="'+(x.delta>0?'orange':'')+'">'+(x.result==='cancelled'?'—':(x.delta>0?'+':'')+x.delta+' ELO')+'</b></div>').join(''):'<div class="empty">Матчей пока нет.</div>';
+ box.innerHTML='<div class="pvh"><div class="pvav">'+av+'</div><div style="min-width:0"><div class="pvn">'+escapeHtml(p.game_nick)+lvl(p.level)+'</div><div class="muted" style="font-size:12px">Игровой ID: '+escapeHtml(p.game_id)+'</div>'+(r.in_my_party?'<div class="hint" style="margin:4px 0 0">👥 В твоей пати</div>':'')+(p.banned?'<div class="warn" style="font-size:12px">Заблокирован</div>':'')+'</div><button class="mini pvx" onclick="closePlayer()" aria-label="Закрыть">✕</button></div>'
+  +(msg?'<div class="hint" style="margin:0 0 10px">'+escapeHtml(msg)+'</div>':'')
+  +'<div class="grid"><div class="stat"><small>Рейтинг ELO</small><div class="number">'+p.elo+'</div><div class="hint">Место #'+p.rank+'</div></div><div class="stat"><small>Винрейт</small><div class="number">'+(p.winrate==null?'—':p.winrate+'%')+'</div><div class="hint">'+p.games+' игр</div></div></div>'
+  +'<div class="card" style="margin-top:12px"><div class="row"><span class="muted">Победы / поражения</span><b>'+p.wins+' / '+p.losses+'</b></div><div class="row"><span class="muted">Уровень</span><b>'+p.level+' из 10</b></div><div class="hint">'+next+'</div></div>'
+  +'<div class="title">Последние матчи</div><div class="card">'+recent+'</div><div style="margin-top:12px">'+act+'</div>';
+}
+async function pvDo(path,id,accept){
+ try{const body=accept===undefined?{tg_id:id}:{tg_id:id,accept};const r=await post(path,body);refreshState();refreshSocial();openPlayer(id,r.message);}
+ catch(e){openPlayer(id,e.message);}
+}
+const inviteParty=id=>socialAct('/api/party/invite',{tg_id:id});
+const respondParty=(partyId,accept)=>socialAct('/api/party/respond',{party_id:partyId,accept});
+async function leaveParty(){if(await ask('Выйти из пати? Если ты лидер, пати распадётся.'))socialAct('/api/party/leave');}
+async function kickMember(id){if(await ask('Исключить игрока из пати?'))socialAct('/api/party/kick',{tg_id:id});}
+// --- админ-панель ---
+let adminSel=null,adminResults=[];
+function adminRowRight(p){return p.banned?'<span class="pill" style="color:#ffb199">БАН</span>':'<span class="muted">›</span>';}
+function renderAdminResults(){
+ const box=document.getElementById('adminResults');
+ box.innerHTML=adminResults.length?'<div class="sep"></div>'+adminResults.map(p=>'<div onclick="selectAdmin('+p.tg_id+')" style="cursor:pointer">'+pRow(p,adminRowRight(p),'ID '+escapeHtml(p.game_id)+' · '+p.elo+' ELO'+(p.username?' · @'+escapeHtml(p.username):''),{me:adminSel&&adminSel.tg_id===p.tg_id})+'</div>').join(''):'';
+}
+async function adminSearch(){
+ const q=document.getElementById('adminQ').value.trim(),box=document.getElementById('adminResults');
+ if(!q){notify('Введи ник, ID или @username.',true);return;}
+ const btn=document.getElementById('adminSearchBtn');btn.disabled=true;
+ try{
+  const r=await request('/api/admin/search?q='+encodeURIComponent(q));adminResults=r.players;adminSel=null;document.getElementById('adminPlayer').style.display='none';
+  if(!r.players.length){box.innerHTML='<div class="sep"></div><div class="empty">Игрок не найден.</div>';return;}
+  if(r.players.length===1){selectAdmin(r.players[0].tg_id);return;}
+  renderAdminResults();
+ }catch(e){notify(e.message,true);}finally{btn.disabled=false;}
+}
+document.getElementById('adminQ').addEventListener('keydown',e=>{if(e.key==='Enter')adminSearch();});
+function selectAdmin(id){adminSel=adminResults.find(p=>p.tg_id===id)||null;renderAdminResults();renderAdminPlayer();const el=document.getElementById('adminPlayer');if(adminSel)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function renderAdminPlayer(){
+ const box=document.getElementById('adminPlayer'),p=adminSel;
+ if(!p){box.style.display='none';return;}
+ box.style.display='block';
+ const keepAmt=document.getElementById('adminAmount')?.value||'',keepReason=document.getElementById('adminReason')?.value||'';
+ box.innerHTML=pRow(p,'<span class="pill" style="'+(p.banned?'color:#ffb199':'color:#b5f2d0')+'">'+(p.banned?'ЗАБАНЕН':'АКТИВЕН')+'</span>',escapeHtml(p.game_nick)+' · ID '+escapeHtml(p.game_id))
+  +'<div class="row"><span class="muted">Telegram ID</span><b>'+p.tg_id+'</b></div>'
+  +(p.username?'<div class="row"><span class="muted">Username</span><b>@'+escapeHtml(p.username)+'</b></div>':'')
+  +'<div class="row"><span class="muted">ELO / уровень</span><b>'+p.elo+' / '+p.level+'</b></div>'
+  +'<div class="row"><span class="muted">Победы / поражения</span><b>'+p.wins+' / '+p.losses+'</b></div>'
+  +(p.active_match?'<div class="row"><span class="muted">Сейчас в матче</span><b>#'+p.active_match+'</b></div>':'')
+  +'<div class="title" style="margin:16px 0 8px">Бан</div>'
+  +(p.is_admin?'<div class="hint">Администратора заблокировать нельзя.</div>':(p.banned?'<button class="btn green" onclick="adminBan(false)">✅ РАЗБАНИТЬ</button>':'<button class="btn red" onclick="adminBan(true)">🚫 ЗАБАНИТЬ</button>'))
+  +'<div class="title" style="margin:16px 0 4px">Рейтинг (ELO)</div>'
+  +'<div class="hint" style="margin-bottom:8px">Например, если в катке были читеры — отними ELO у тех, кто пострадал не по своей вине, или у нарушителя.</div>'
+  +'<div class="chips">'+[10,25,50,100].map(n=>'<button class="mini" onclick="document.getElementById(\'adminAmount\').value='+n+'">'+n+'</button>').join('')+'</div>'
+  +'<input class="input" id="adminAmount" type="number" inputmode="numeric" min="1" max="2000" placeholder="Сколько ELO" style="margin-top:6px">'
+  +'<input class="input" id="adminReason" maxlength="200" placeholder="Причина (игрок её увидит, необязательно)" autocomplete="off">'
+  +'<div class="two"><button class="btn red" onclick="adminElo(\'subtract\')">➖ ОТНЯТЬ</button><button class="btn green" onclick="adminElo(\'add\')">➕ ДОБАВИТЬ</button></div>';
+ document.getElementById('adminAmount').value=keepAmt;document.getElementById('adminReason').value=keepReason;
+}
+function adminApply(r){
+ adminSel=r.player;const i=adminResults.findIndex(x=>x.tg_id===r.player.tg_id);if(i>=0)adminResults[i]=r.player;else adminResults.unshift(r.player);
+ renderAdminResults();renderAdminPlayer();notify(r.message);loadAdminLog();
+}
+async function adminBan(banned){
+ const p=adminSel;if(!p)return;
+ if(!await ask((banned?'Забанить ':'Разбанить ')+p.game_nick+'?'))return;
+ try{adminApply(await post('/api/admin/ban',{tg_id:p.tg_id,banned}));}catch(e){notify(e.message,true);}
+}
+async function adminElo(action){
+ const p=adminSel;if(!p)return;
+ const raw=document.getElementById('adminAmount').value.trim(),amount=Number(raw);
+ if(!/^[0-9]{1,4}$/.test(raw)||amount<1||amount>2000){notify('Укажи количество ELO от 1 до 2000.',true);return;}
+ const reason=document.getElementById('adminReason').value.trim();
+ if(!await ask((action==='add'?'Добавить ':'Отнять ')+amount+' ELO у '+p.game_nick+'?'))return;
+ try{const r=await post('/api/admin/elo',{tg_id:p.tg_id,action,amount,reason:reason||null});document.getElementById('adminAmount').value='';document.getElementById('adminReason').value='';adminApply(r);}
+ catch(e){notify(e.message,true);}
+}
+async function loadAdminLog(){
+ const box=document.getElementById('adminLog');
+ try{
+  const r=await request('/api/admin/log');
+  box.innerHTML=r.log.length?r.log.map(x=>'<div class="item"><span><b>'+escapeHtml(x.action)+'</b> · '+escapeHtml(x.target)+'<br><small class="muted">'+escapeHtml(x.admin)+(x.details?' · '+escapeHtml(x.details):'')+'</small></span><small class="muted">'+new Date(x.at*1000).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></div>').join(''):'<div class="empty">Действий пока не было.</div>';
+ }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+}
+
+function hostTag(){return '<span class="host">👑 ХОСТ</span>';}
+async function loadAdminMatches(){
+ const box=document.getElementById('adminMatches');
+ try{
+  const r=await request('/api/admin/matches');
+  if(!r.matches.length){box.innerHTML='<div class="empty">Активных матчей нет.</div>';return;}
+  const side=(name,list,hostId)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player" onclick="adminJump('+p.tg_id+')" style="cursor:pointer"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===hostId?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
+  box.innerHTML=r.matches.map(m=>{const min=Math.max(0,Math.floor((r.now-m.created_at)/60));
+   return '<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px"><div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'
+    +'<div class="hint" style="margin:0 0 6px">Идёт '+min+' мин · '+(m.server_label?'сервер: '+escapeHtml(m.server_label)+' · ':'')+(m.map?'карта: '+escapeHtml(m.map)+' · ':(m.veto_phase==='ban'||m.veto_phase==='pick'?'идёт выбор карты · ':''))+'скриншотов: '+m.screenshots+' · данные комнаты: '+(m.room_set?'есть':'нет')+'</div>'
+    +side('🟦 '+m.team1_name,m.team1,m.host_id)+side('🟥 '+m.team2_name,m.team2,m.host_id)
+    +'<div class="hint">Нажми на игрока, чтобы открыть его в панели. Отменить матч: /cancelmatch '+m.id+'</div></div>';}).join('');
+ }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+}
+function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
+function loadAdmin(){loadAdminLog();loadAdminMatches();}
 refreshState();
-setInterval(()=>{if(document.visibilityState==='visible')refreshState()},12000);
+(function pollLoop(){
+ setTimeout(async()=>{
+  if(document.visibilityState==='visible'){await refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}
+  pollLoop();
+ },(isPending(state&&state.match)||(state&&state.party&&state.party.size>1))?4000:12000);
+})();
 </script></body></html>
