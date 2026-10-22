@@ -23,6 +23,12 @@ select.input option{background:#1b1d22;color:#fff}
 .maps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.map{display:block;width:100%;text-align:left;background:#15161a;border:1px solid #3a3d46;border-radius:12px;color:#fff;padding:12px;font:inherit;min-height:64px}.map b{display:block;font-size:14px}.map small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
 button.map.avail{cursor:pointer;border-color:var(--orange);background:#ff5a1f14}.map.banned{opacity:.5}.map.banned b{text-decoration:line-through}.map.picked{border-color:var(--green);background:#45d48318}.map.picked small{color:#8ee8b6}.map.left{opacity:.6}
 .vlog{font-size:11px;color:var(--muted);margin:0 0 4px}
+.pl.tap{cursor:pointer}.pl.tap:active{opacity:.7}
+.ovl{position:fixed;inset:0;z-index:50;background:#000a;display:none;align-items:flex-end;justify-content:center}.ovl.show{display:flex}
+.sheet{width:100%;max-width:680px;max-height:88vh;overflow:auto;background:#17181c;border:1px solid #2c2f36;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.pvh{display:flex;gap:14px;align-items:center;margin:0 0 14px}.pvav{width:64px;height:64px;border-radius:18px;background:#292c33;display:grid;place-items:center;font-weight:900;font-size:24px;overflow:hidden;flex:none}.pvav img{width:100%;height:100%;object-fit:cover}
+.pvn{font-size:20px;font-weight:900;overflow:hidden;text-overflow:ellipsis}.pvx{margin-left:auto;align-self:flex-start;flex:none}
+.rdy{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-right:6px;background:#173a2a;color:#6fe0a5;vertical-align:middle}.rdy.wait{background:#33363e;color:#c9ccd4}
 </style>
 </head>
 <body><div class="wrap">
@@ -77,6 +83,7 @@ button.map.avail{cursor:pointer;border-color:var(--orange);background:#ff5a1f14}
  <div class="title">Последние действия</div><div class="card" id="adminLog"><div class="empty">Загрузка журнала…</div></div>
 </section>
 </div><nav class="nav"><button class="active" data-page="find"><span class="ico">⌕</span>Найти матч</button><button data-page="stats"><span class="ico">▥</span>Статистика</button><button data-page="friends"><span class="ico">👥</span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico">◉</span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico">🛡</span>Админ</button></nav>
+<div class="ovl" id="pv" onclick="if(event.target===this)closePlayer()"><div class="sheet" id="pvBody"></div></div>
 <script>
 // IMPORTANT: set this to your public HTTPS API URL after starting Cloudflare Tunnel.
 // Example: const API_BASE = 'https://your-name.trycloudflare.com';
@@ -164,7 +171,7 @@ async function vetoMap(name){
 function renderMatch(m){
  const box=document.getElementById('matchCard');
  if(!m){box.innerHTML='<div class="empty">Активного матча нет.<br>Нажми «Найти матч», чтобы встать в очередь.</div>';return;}
- const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
+ const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
  const pending=isPending(m);
  let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':pending?'Выбор карты':'Игра идёт')+'</span></div>'+(m.server_label?'<div class="row"><span class="muted">🌍 Сервер</span><b>'+escapeHtml(m.server_label)+'</b></div>':'')+(m.map?'<div class="row"><span class="muted">🗺 Карта</span><b>'+escapeHtml(m.map)+'</b></div>':'')+vetoBlock(m)+team('🟦 '+(m.team1_name||'Команда 1'),m.team1)+team('🟥 '+(m.team2_name||'Команда 2'),m.team2);
  if(m.room_data) html+='<div class="row"><span>Данные комнаты</span><b>'+escapeHtml(m.room_data)+'</b></div>';
@@ -185,6 +192,7 @@ async function refreshState(){
   document.getElementById('queueCount').textContent=((s.queue.counts||{})[selServer]||0)+'/'+s.queue.needed;
   document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
   const qb=document.getElementById('queueBtn');qb.textContent=s.queue.joined?'✕ ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'🎮 НАЙТИ МАТЧ ПАТИ':'🎮 НАЙТИ МАТЧ');
+  if(multi&&party.is_leader&&!s.queue.joined&&!party.all_ready){qb.textContent='⏳ ЖДЁМ ГОТОВНОСТЬ ('+party.ready_count+'/'+party.size+')';document.getElementById('queueHint').textContent='Поиск начнётся, когда все нажмут «Готов»';}
   qb.disabled=queueDisabled(s);renderPartyStrip(party);
   document.getElementById('navAdmin').style.display=s.is_admin?'':'none';const dot=document.getElementById('friendsDot');dot.textContent=s.badge;dot.classList.toggle('show',s.badge>0);
   document.getElementById('statElo').textContent=p.elo;document.getElementById('statRank').textContent='Место #'+s.rank+' · Уровень '+p.level;
@@ -194,7 +202,7 @@ async function refreshState(){
   const sig=JSON.stringify(s.match,(k,v)=>k==='seconds_left'?undefined:v);
   if(sig!==lastMatchSig){lastMatchSig=sig;renderMatch(s.match);}
   document.getElementById('history').innerHTML=s.history.length?s.history.map(x=>'<div class="item"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+'</span><b class="'+(x.delta>0?'orange':'')+'">'+(x.status==='finished'?(x.delta>0?'+':'')+x.delta+' ELO':'—')+'</b></div>').join(''):'<div class="empty">История матчей пока пуста.</div>';
-  document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span>'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+' '+escapeHtml(x.game_nick)+lvl(x.level)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
+  document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span class="tap" style="cursor:pointer" onclick="openPlayer('+x.tg_id+')">'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+' '+escapeHtml(x.game_nick)+lvl(x.level)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
  }catch(e){lastMatchSig=null;showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
 }
 async function toggleQueue(){
@@ -254,15 +262,17 @@ async function sendComplaint(){
 
 // ---- уровни, пати, друзья, таблица лидеров, админка ----
 function lvl(n){return '<span class="lvl l'+n+'">LVL '+n+'</span>';}
-function queueDisabled(s){return !!s.match||!!(s.party&&s.party.size>1&&!s.party.is_leader);}
-function pRow(p,right,sub,opts){opts=opts||{};return '<div class="player'+(opts.me?' me':'')+'"><span class="pl">'+(opts.prefix||'')+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>'+(sub||('ID '+escapeHtml(p.game_id)+' · '+p.elo+' ELO'))+'</small></span></span>'+(right||'')+'</div>';}
+function queueDisabled(s){const p=s.party;return !!s.match||!!(p&&p.size>1&&(!p.is_leader||(!s.queue.joined&&!p.all_ready)));}
+function pRow(p,right,sub,opts){opts=opts||{};return '<div class="player'+(opts.me?' me':'')+'"><span class="pl tap" onclick="openPlayer('+p.tg_id+')">'+(opts.prefix||'')+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>'+(sub||('ID '+escapeHtml(p.game_id)+' · '+p.elo+' ELO'))+'</small></span></span>'+(right||'')+'</div>';}
 function ask(msg){return new Promise(r=>{if(tg&&tg.showConfirm){try{tg.showConfirm(msg,ok=>r(!!ok));return;}catch(e){}}r(window.confirm(msg));});}
 async function post(path,body){return request(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});}
 function renderPartyStrip(party){
  const box=document.getElementById('partyStrip');
  if(!party||party.size<2){box.style.display='none';box.innerHTML='';return;}
  box.style.display='block';
- box.innerHTML='<div class="row" style="padding-top:0"><b>👥 Пати '+party.size+'/'+party.max+'</b><span class="pill">'+(party.in_queue?'В поиске':(party.is_leader?'Ты лидер':'Ждём лидера'))+'</span></div><div class="muted" style="font-size:12px">'+party.members.map(m=>escapeHtml(m.game_nick)+' ('+m.elo+')').join(' · ')+'</div><div class="hint">Вы попадёте в одну команду.</div>';
+ const pill=party.in_queue?'В поиске':(party.is_leader?(party.all_ready?'Все готовы':'Готовы '+party.ready_count+'/'+party.size):(party.you_ready?'Ты готов':'Нажми «Готов»'));
+ const readyBtn=party.is_leader?'':'<button class="btn'+(party.you_ready?' ghost':'')+'" style="margin-top:10px;min-height:44px" onclick="setReady('+(party.you_ready?'false':'true')+')">'+(party.you_ready?'✕ ОТМЕНИТЬ ГОТОВНОСТЬ':'✅ Я ГОТОВ')+'</button>';
+ box.innerHTML='<div class="row" style="padding-top:0"><b>👥 Пати '+party.size+'/'+party.max+'</b><span class="pill">'+pill+'</span></div>'+party.members.map(m=>pRow(m,readyTag(m,party),(m.tg_id===party.leader_id?'👑 Лидер · ':'')+m.elo+' ELO')).join('')+'<div class="hint">Вы попадёте в одну команду. Матч начнётся, когда все игроки пати будут готовы.</div>'+readyBtn;
 }
 // --- таблица лидеров ---
 async function loadLeaderboard(){
@@ -285,9 +295,10 @@ function renderSocial(){
  const pt=s.party,pc=document.getElementById('partyCard');
  if(!pt){pc.innerHTML='<div class="empty">Ты играешь один.<br>Нажми «В пати» у друга ниже — пати создастся автоматически.</div>';}
  else{
-  pc.innerHTML='<div class="row" style="padding-top:0"><b>Пати '+pt.size+'/'+pt.max+'</b><span class="pill">'+(pt.in_queue?'В поиске матча':(pt.is_leader?'Ты лидер':'Лидер запускает поиск'))+'</span></div>'
-   +pt.members.map(m=>{const lead=m.tg_id===pt.leader_id;const kick=pt.is_leader&&!lead&&!pt.in_queue?'<button class="mini red" onclick="kickMember('+m.tg_id+')">Исключить</button>':'';return pRow(m,kick,(lead?'👑 Лидер · ':'')+'ID '+escapeHtml(m.game_id)+' · '+m.elo+' ELO');}).join('')
-   +'<div class="hint">Разница рейтинга в пати: '+pt.spread+' из '+pt.elo_limit+' ELO. Поиск матча запускает лидер на вкладке «Найти матч».</div>'
+  pc.innerHTML='<div class="row" style="padding-top:0"><b>Пати '+pt.size+'/'+pt.max+'</b><span class="pill">'+(pt.in_queue?'В поиске матча':(pt.is_leader?(pt.all_ready?'Все готовы':'Готовы '+pt.ready_count+'/'+pt.size):(pt.you_ready?'Ты готов':'Нажми «Готов»')))+'</span></div>'
+   +pt.members.map(m=>{const lead=m.tg_id===pt.leader_id;const kick=pt.is_leader&&!lead&&!pt.in_queue?'<button class="mini red" onclick="kickMember('+m.tg_id+')">Исключить</button>':'';return pRow(m,readyTag(m,pt)+kick,(lead?'👑 Лидер · ':'')+'ID '+escapeHtml(m.game_id)+' · '+m.elo+' ELO');}).join('')
+   +'<div class="hint">Разница рейтинга в пати: '+pt.spread+' из '+pt.elo_limit+' ELO. Все игроки нажимают «Готов», затем лидер запускает поиск на вкладке «Найти матч».</div>'
+   +(pt.is_leader?'':'<button class="btn'+(pt.you_ready?' ghost':'')+'" style="margin-top:10px;min-height:44px" onclick="setReady('+(pt.you_ready?'false':'true')+')">'+(pt.you_ready?'✕ ОТМЕНИТЬ ГОТОВНОСТЬ':'✅ Я ГОТОВ')+'</button>')
    +'<button class="btn ghost" style="margin-top:10px;min-height:40px" onclick="leaveParty()">'+(pt.is_leader?'РАСПУСТИТЬ ПАТИ':'ВЫЙТИ ИЗ ПАТИ')+'</button>';
  }
  document.getElementById('reqIn').innerHTML=s.requests_in.length?'<div class="title">Заявки в друзья</div><div class="card">'+s.requests_in.map(p=>pRow(p,'<span class="btns"><button class="mini go" onclick="respondFriend('+p.tg_id+',true)">Принять</button><button class="mini" onclick="respondFriend('+p.tg_id+',false)">✕</button></span>')).join('')+'</div>':'';
@@ -312,6 +323,42 @@ document.getElementById('friendQ').addEventListener('keydown',e=>{if(e.key==='En
 const addFriend=id=>socialAct('/api/friends/request',{tg_id:id});
 const respondFriend=(id,accept)=>socialAct('/api/friends/respond',{tg_id:id,accept});
 async function removeFriend(id){if(await ask('Удалить из друзей / отменить заявку?'))socialAct('/api/friends/remove',{tg_id:id});}
+function readyTag(m,party){
+ if(m.tg_id===party.leader_id)return '';
+ return m.ready?'<span class="rdy">✓ ГОТОВ</span>':'<span class="rdy wait">ЖДЁМ</span>';
+}
+async function setReady(v){
+ try{const r=await post('/api/party/ready',{ready:v});notify(r.message);}catch(e){notify(e.message,true);}
+ await refreshState();refreshSocial();
+}
+// --- профиль игрока ---
+function closePlayer(){document.getElementById('pv').classList.remove('show');}
+async function openPlayer(id,msg){
+ const box=document.getElementById('pvBody');buzz();document.getElementById('pv').classList.add('show');
+ if(!msg)box.innerHTML='<div class="empty">Загрузка профиля…</div>';
+ try{renderPlayer(await request('/api/player/'+id),msg);}
+ catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div><button class="btn ghost" style="margin-top:12px" onclick="closePlayer()">ЗАКРЫТЬ</button>';}
+}
+function renderPlayer(r,msg){
+ const p=r.player,box=document.getElementById('pvBody');
+ const av=p.avatar?'<img alt="" src="'+API_BASE+p.avatar+'">':escapeHtml(initialOf(p));
+ const act=r.relation==='me'?'<div class="hint" style="text-align:center">Это твой профиль</div>'
+  :r.relation==='friend'?'<div class="row"><span class="pill">🤝 Вы друзья</span><button class="mini" onclick="pvDo(\'/api/friends/remove\','+p.tg_id+')">Удалить из друзей</button></div>'
+  :r.relation==='pending_out'?'<div class="row"><span class="pill">Заявка отправлена</span><button class="mini" onclick="pvDo(\'/api/friends/remove\','+p.tg_id+')">Отменить</button></div>'
+  :r.relation==='pending_in'?'<button class="btn" onclick="pvDo(\'/api/friends/respond\','+p.tg_id+',true)">ПРИНЯТЬ ЗАЯВКУ В ДРУЗЬЯ</button>'
+  :'<button class="btn" onclick="pvDo(\'/api/friends/request\','+p.tg_id+')">＋ ДОБАВИТЬ В ДРУЗЬЯ</button>';
+ const next=p.level_next?'До LVL '+(p.level+1)+': ещё '+(p.level_next-p.elo)+' ELO':'Максимальный уровень';
+ const recent=r.recent.length?r.recent.map(x=>'<div class="item"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+'</span><b class="'+(x.delta>0?'orange':'')+'">'+(x.result==='cancelled'?'—':(x.delta>0?'+':'')+x.delta+' ELO')+'</b></div>').join(''):'<div class="empty">Матчей пока нет.</div>';
+ box.innerHTML='<div class="pvh"><div class="pvav">'+av+'</div><div style="min-width:0"><div class="pvn">'+escapeHtml(p.game_nick)+lvl(p.level)+'</div><div class="muted" style="font-size:12px">Игровой ID: '+escapeHtml(p.game_id)+'</div>'+(r.in_my_party?'<div class="hint" style="margin:4px 0 0">👥 В твоей пати</div>':'')+(p.banned?'<div class="warn" style="font-size:12px">Заблокирован</div>':'')+'</div><button class="mini pvx" onclick="closePlayer()" aria-label="Закрыть">✕</button></div>'
+  +(msg?'<div class="hint" style="margin:0 0 10px">'+escapeHtml(msg)+'</div>':'')
+  +'<div class="grid"><div class="stat"><small>Рейтинг ELO</small><div class="number">'+p.elo+'</div><div class="hint">Место #'+p.rank+'</div></div><div class="stat"><small>Винрейт</small><div class="number">'+(p.winrate==null?'—':p.winrate+'%')+'</div><div class="hint">'+p.games+' игр</div></div></div>'
+  +'<div class="card" style="margin-top:12px"><div class="row"><span class="muted">Победы / поражения</span><b>'+p.wins+' / '+p.losses+'</b></div><div class="row"><span class="muted">Уровень</span><b>'+p.level+' из 10</b></div><div class="hint">'+next+'</div></div>'
+  +'<div class="title">Последние матчи</div><div class="card">'+recent+'</div><div style="margin-top:12px">'+act+'</div>';
+}
+async function pvDo(path,id,accept){
+ try{const body=accept===undefined?{tg_id:id}:{tg_id:id,accept};const r=await post(path,body);refreshState();refreshSocial();openPlayer(id,r.message);}
+ catch(e){openPlayer(id,e.message);}
+}
 const inviteParty=id=>socialAct('/api/party/invite',{tg_id:id});
 const respondParty=(partyId,accept)=>socialAct('/api/party/respond',{party_id:partyId,accept});
 async function leaveParty(){if(await ask('Выйти из пати? Если ты лидер, пати распадётся.'))socialAct('/api/party/leave');}
@@ -404,6 +451,6 @@ refreshState();
  setTimeout(async()=>{
   if(document.visibilityState==='visible'){await refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}
   pollLoop();
- },isPending(state&&state.match)?3000:12000);
+ },(isPending(state&&state.match)||(state&&state.party&&state.party.size>1))?4000:12000);
 })();
 </script></body></html>
