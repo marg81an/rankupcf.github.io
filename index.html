@@ -17,13 +17,19 @@ select.input option{background:#1b1d22;color:#fff}
 .mini{border:1px solid #3a3d46;background:#292c33;color:#fff;border-radius:9px;padding:8px 11px;font:800 11px system-ui;cursor:pointer}.mini.go{background:var(--orange);border-color:var(--orange)}.mini.red{background:#3a1f1c;border-color:#69322b;color:#ffc0b1}.mini:disabled{opacity:.45}
 .btns{display:flex;gap:6px;flex:none}.warn{color:#ffb199}.player.me{background:#ff5a1f14;border-radius:10px;padding-left:8px;padding-right:8px}.rk{flex:none;width:34px;font-weight:900;font-size:13px}
 .host{display:inline-block;font-size:9px;font-weight:900;border-radius:6px;padding:2px 5px;margin-left:6px;background:#4a3a10;color:#ffd35c;vertical-align:middle}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 4px}.sep{height:1px;background:var(--line);margin:14px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.btn.red{background:#c0392b}.btn.green{background:#1f9d5c}.fl{display:block;font-size:11px;color:var(--muted);margin:10px 0 0}
+.servers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}.srvt{font-size:11px;font-weight:900;letter-spacing:1px;color:#e7c9bb;margin:0 0 8px}
+.srv{display:block;text-align:left;min-width:0;background:#15161a;border:1px solid #3a3d46;border-radius:12px;color:#fff;padding:10px 11px;cursor:pointer;font:inherit}.srv b{display:block;font-size:13px}.srv small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.srv.sel{border-color:var(--orange);background:#ff5a1f1c}.srv:disabled{opacity:.55;cursor:default}.srv.sel:disabled{opacity:1}
+.vhead{font-size:14px;font-weight:900;margin:2px 0 4px}.vhead.you{color:var(--orange)}.vsub{font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 10px}.vtimer{display:inline-block;min-width:44px;text-align:center;border:1px solid #3a3d46;background:#292c33;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900;margin-left:6px;vertical-align:middle}.vtimer.low{color:#ffb199;border-color:#69322b}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.map{display:block;width:100%;text-align:left;background:#15161a;border:1px solid #3a3d46;border-radius:12px;color:#fff;padding:12px;font:inherit;min-height:64px}.map b{display:block;font-size:14px}.map small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+button.map.avail{cursor:pointer;border-color:var(--orange);background:#ff5a1f14}.map.banned{opacity:.5}.map.banned b{text-decoration:line-through}.map.picked{border-color:var(--green);background:#45d48318}.map.picked small{color:#8ee8b6}.map.left{opacity:.6}
+.vlog{font-size:11px;color:var(--muted);margin:0 0 4px}
 </style>
 </head>
 <body><div class="wrap">
 <header class="top"><div><div class="brand">RANK<span>UP</span></div><div class="sub">COMPETITIVE MATCHMAKING</div></div><div class="avatar" id="avatar">RU</div></header>
 <div id="status" class="status" role="status" aria-live="polite"></div>
 <section class="page active" id="find">
- <div class="hero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><button class="btn" id="queueBtn" onclick="toggleQueue()">🎮 НАЙТИ МАТЧ</button></div>
+ <div class="hero"><div class="eyebrow">RANKED · 5V5</div><h1>Готов доказать,<br>кто сильнее?</h1><p>Вступай в очередь, собирай команду и поднимай рейтинг. Все действия — прямо здесь.</p><div id="serverBox" style="margin:0 0 14px"></div><button class="btn" id="queueBtn" onclick="toggleQueue()">🎮 НАЙТИ МАТЧ</button></div>
  <div class="grid"><div class="stat"><small>Твой рейтинг</small><div class="number" id="elo">—</div><div class="hint" id="rank">Загрузка профиля…</div></div><div class="stat"><small>Очередь</small><div class="number" id="queueCount">—/10</div><div class="hint" id="queueHint">Игроков в поиске</div></div></div>
  <div class="card" id="partyStrip" style="display:none;margin-bottom:12px"></div>
  <div class="title">Текущий матч</div><div class="card" id="matchCard"><div class="empty">Загружаю состояние матча…</div></div>
@@ -79,6 +85,8 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#101114'); tg.setBackgroundColor('#101114'); } catch(e){} }
 const initData = tg?.initData || '';
 let state = null;
+let selServer = null, lastMatchSig = null, vetoDeadline = null, vetoPolled = false;
+try { selServer = localStorage.getItem('rankupServer'); } catch (e) {}
 function showStatus(message, error=false){const el=document.getElementById('status');el.textContent=message;el.className='status show'+(error?' error':'');}
 function clearStatus(){document.getElementById('status').className='status';}
 function buzz(){try{tg?.HapticFeedback?.impactOccurred('light')}catch(e){}}
@@ -94,14 +102,75 @@ async function request(path, options={}) {
  if(!response.ok) throw new Error(data.detail||'Ошибка сервера ('+response.status+').');
  return data;
 }
+const isPending=m=>!!(m&&m.veto&&(m.veto.phase==='ban'||m.veto.phase==='pick'));
+function renderServers(s,notLeader){
+ const box=document.getElementById('serverBox'),list=s.servers||[];if(!list.length){box.innerHTML='';return;}
+ if(s.queue.joined&&s.queue.server)selServer=s.queue.server;
+ else if(!list.some(x=>x.key===selServer))selServer=list[0].key;
+ const locked=!!s.queue.joined||!!s.match||notLeader,counts=s.queue.counts||{};
+ box.innerHTML='<div class="srvt">🌍 СЕРВЕР</div><div class="servers">'+list.map(x=>'<button class="srv'+(x.key===selServer?' sel':'')+'" '+(locked?'disabled ':'')+'onclick="pickServer(\''+x.key+'\')"><b>'+escapeHtml(x.city)+'</b><small>'+escapeHtml(x.region)+' · '+(counts[x.key]||0)+' в поиске</small></button>').join('')+'</div><div class="hint">Подбор идёт только среди игроков того же сервера.'+(notLeader?' Сервер выбирает лидер пати.':'')+'</div>';
+}
+function pickServer(key){
+ if(state&&(state.queue.joined||state.match))return;
+ selServer=key;try{localStorage.setItem('rankupServer',key);}catch(e){}buzz();
+ if(state){renderServers(state,!!(state.party&&state.party.size>1&&!state.party.is_leader));document.getElementById('queueCount').textContent=((state.queue.counts||{})[key]||0)+'/'+state.queue.needed;}
+}
+function setVetoDeadline(m){
+ const v=m&&m.veto;
+ if(v&&(v.phase==='ban'||v.phase==='pick')&&v.seconds_left!=null){vetoDeadline=Date.now()+v.seconds_left*1000;vetoPolled=false;}else vetoDeadline=null;
+}
+function tickVeto(){
+ const el=document.getElementById('vetoTimer');if(!el||vetoDeadline==null)return;
+ const left=Math.max(0,Math.ceil((vetoDeadline-Date.now())/1000));
+ el.textContent=left+' с';el.classList.toggle('low',left<=10);
+ if(left===0&&!vetoPolled){vetoPolled=true;setTimeout(refreshState,1200);}
+}
+setInterval(tickVeto,1000);
+function vetoBlock(m){
+ const v=m.veto;if(!v)return '';
+ const tn=t=>escapeHtml(v.team_names[String(t)]),cap=t=>escapeHtml((v.captains[String(t)]||{}).game_nick||'—');
+ const pending=v.phase==='ban'||v.phase==='pick',ban=v.phase==='ban';
+ let head,sub='';
+ if(v.phase==='done'){head='<div class="vhead">🗺 Карта выбрана: <span class="orange">'+escapeHtml(v.final_map)+'</span></div>';}
+ else{
+  const timer=v.seconds_left!=null?'<span class="vtimer" id="vetoTimer">'+v.seconds_left+' с</span>':'';
+  if(v.your_turn)head='<div class="vhead you">'+(ban?'Твой ход — забань карту':'Твой ход — выбери карту для матча')+timer+'</div>';
+  else head='<div class="vhead">Ход '+tn(v.turn_team)+': капитан '+cap(v.turn_team)+(ban?' банит карту':' выбирает карту')+timer+'</div>';
+  if(ban)sub='Первой банит '+tn(v.first_team)+' (выпало случайно). Капитаны банят по очереди по одной карте, останется две.';
+  else{const a=v.avg_elo['1'],b=v.avg_elo['2'];
+   sub=a===b?'Средний ELO команд равен ('+a+'), карту выбирает капитан '+tn(v.picker_team)+' — команды, которая банила второй.':'У '+tn(v.picker_team)+' средний ELO ниже ('+v.avg_elo[String(v.picker_team)]+' против '+v.avg_elo[String(v.picker_team===1?2:1)]+'), поэтому карту из двух оставшихся выбирает её капитан '+cap(v.picker_team)+'.';}
+  if(!v.you_captain)sub+=' Ты не капитан — ждёшь решения капитанов.';
+  else if(!v.your_turn)sub+=' Ты капитан — дождись своего хода.';
+ }
+ const maps=v.maps.map(x=>{
+  let cls='map '+x.status,small='';
+  if(x.status==='banned')small='Бан · '+tn(x.by);
+  else if(x.status==='picked')small='✅ Выбрана';
+  else if(x.status==='left')small='Не выбрана';
+  else small=v.your_turn?(ban?'Нажми, чтобы забанить':'Нажми, чтобы выбрать'):(pending&&!ban?'Осталась':'В игре');
+  const inner='<b>'+escapeHtml(x.name)+'</b><small>'+small+'</small>';
+  if(x.status==='available'&&v.your_turn)return '<button class="'+cls+' avail" onclick="vetoMap(\''+escapeHtml(x.name)+'\')">'+inner+'</button>';
+  return '<div class="'+cls+'">'+inner+'</div>';
+ }).join('');
+ return '<div class="sep"></div>'+head+(sub?'<div class="vsub">'+sub+'</div>':'')+'<div class="maps">'+maps+'</div>'+'<div class="sep"></div>';
+}
+async function vetoMap(name){
+ const m=state?.match;if(!m||!m.veto||!m.veto.your_turn)return;
+ const ban=m.veto.phase==='ban';
+ if(!await ask((ban?'Забанить карту ':'Играть на карте ')+name+'?'))return;
+ try{const r=await post('/api/match/veto',{match_id:m.id,map:name});notify(r.message);await refreshState();}
+ catch(e){notify(e.message,true);await refreshState();}
+}
 function renderMatch(m){
  const box=document.getElementById('matchCard');
  if(!m){box.innerHTML='<div class="empty">Активного матча нет.<br>Нажми «Найти матч», чтобы встать в очередь.</div>';return;}
  const team=(name,players)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+players.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===m.host_id?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+' ELO</b></div>').join('')+'</div>';
- let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'+team('🟦 '+(m.team1_name||'Команда 1'),m.team1)+team('🟥 '+(m.team2_name||'Команда 2'),m.team2);
+ const pending=isPending(m);
+ let html='<div class="row"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':pending?'Выбор карты':'Игра идёт')+'</span></div>'+(m.server_label?'<div class="row"><span class="muted">🌍 Сервер</span><b>'+escapeHtml(m.server_label)+'</b></div>':'')+(m.map?'<div class="row"><span class="muted">🗺 Карта</span><b>'+escapeHtml(m.map)+'</b></div>':'')+vetoBlock(m)+team('🟦 '+(m.team1_name||'Команда 1'),m.team1)+team('🟥 '+(m.team2_name||'Команда 2'),m.team2);
  if(m.room_data) html+='<div class="row"><span>Данные комнаты</span><b>'+escapeHtml(m.room_data)+'</b></div>';
- if(m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
- if(m.status==='active'||m.status==='review') html+='<div class="title" style="margin-top:15px">Отправить результат</div><input class="upload" type="file" id="resultPhoto" accept="image/*"><button class="btn secondary" onclick="uploadResult('+m.id+')">📸 ОТПРАВИТЬ СКРИНШОТ</button>';
+ if(pending)html+='<div class="hint" style="margin-top:12px">Данные комнаты и отправка скриншота откроются, когда капитаны выберут карту.</div>';
+ if(!pending&&m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><div class="hint" style="margin:6px 0">⚠️ <b>Сначала создай комнату с обязательными настройками:</b><br>• Матч → Победных раундов: 13 (остальное по умолчанию)<br>• Доступ → Макс. кол-во игроков: 10 (остальное по умолчанию)<br>• Турнир → Не начинать матч, пока не соберётся состав: Вкл<br>• Турнир → Нужно игроков: 10<br>• Турнир → Замок составов: Вкл</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
+ if(!pending&&(m.status==='active'||m.status==='review')) html+='<div class="title" style="margin-top:15px">Отправить результат</div><input class="upload" type="file" id="resultPhoto" accept="image/*"><button class="btn secondary" onclick="uploadResult('+m.id+')">📸 ОТПРАВИТЬ СКРИНШОТ</button>';
  box.innerHTML=html;
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -111,23 +180,26 @@ async function refreshState(){
   const p=s.player, initial=(p.game_nick||'R').trim()[0]?.toUpperCase()||'R';
   setAvatar(document.getElementById('avatar'),p,initial);setAvatar(document.getElementById('bigavatar'),p,initial);
   document.getElementById('elo').textContent=p.elo;document.getElementById('rank').textContent='Место #'+s.rank+' · Уровень '+p.level;
-  document.getElementById('queueCount').textContent=s.queue.size+'/'+s.queue.needed;
   const party=s.party,multi=!!(party&&party.size>1),notLeader=multi&&!party.is_leader;
-  document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Ожидание игроков');
+  renderServers(s,notLeader);
+  document.getElementById('queueCount').textContent=((s.queue.counts||{})[selServer]||0)+'/'+s.queue.needed;
+  document.getElementById('queueHint').textContent=s.queue.joined?(notLeader?'Пати в поиске — остановить может лидер':'Ты в очереди — нажми, чтобы выйти'):(notLeader?'Поиск запускает лидер пати':'Игроков в поиске на сервере');
   const qb=document.getElementById('queueBtn');qb.textContent=s.queue.joined?'✕ ВЫЙТИ ИЗ ОЧЕРЕДИ':(multi?'🎮 НАЙТИ МАТЧ ПАТИ':'🎮 НАЙТИ МАТЧ');
   qb.disabled=queueDisabled(s);renderPartyStrip(party);
   document.getElementById('navAdmin').style.display=s.is_admin?'':'none';const dot=document.getElementById('friendsDot');dot.textContent=s.badge;dot.classList.toggle('show',s.badge>0);
   document.getElementById('statElo').textContent=p.elo;document.getElementById('statRank').textContent='Место #'+s.rank+' · Уровень '+p.level;
   const games=p.wins+p.losses;document.getElementById('games').textContent=games;document.getElementById('wins').textContent=p.wins;document.getElementById('winrate').textContent=games?Math.round(p.wins/games*100)+'%':'—';
   document.getElementById('playerName').textContent=p.game_nick;document.getElementById('playerId').textContent='Игровой ID: '+p.game_id;document.getElementById('profileRank').textContent='Игрок #'+s.rank+' · LVL '+p.level;document.getElementById('profileElo').textContent=p.elo;document.getElementById('profileLevel').textContent=p.level+' из 10';document.getElementById('levelNext').textContent=p.level_next?('ещё '+(p.level_next-p.elo)+' ELO'):'максимальный';document.getElementById('record').textContent=p.wins+' / '+p.losses;document.getElementById('profilePlace').textContent='#'+s.rank;
-  renderMatch(s.match);
+  setVetoDeadline(s.match);
+  const sig=JSON.stringify(s.match,(k,v)=>k==='seconds_left'?undefined:v);
+  if(sig!==lastMatchSig){lastMatchSig=sig;renderMatch(s.match);}
   document.getElementById('history').innerHTML=s.history.length?s.history.map(x=>'<div class="item"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+'</span><b class="'+(x.delta>0?'orange':'')+'">'+(x.status==='finished'?(x.delta>0?'+':'')+x.delta+' ELO':'—')+'</b></div>').join(''):'<div class="empty">История матчей пока пуста.</div>';
   document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span>'+(['🥇','🥈','🥉'][x.rank-1]||('#'+x.rank))+' '+escapeHtml(x.game_nick)+lvl(x.level)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
- }catch(e){showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
+ }catch(e){lastMatchSig=null;showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
 }
 async function toggleQueue(){
  const b=document.getElementById('queueBtn');b.disabled=true;
- try{const path=state?.queue?.joined?'/api/queue/leave':'/api/queue/join';const r=await request(path,{method:'POST'});showStatus(r.message);await refreshState();}
+ try{const joined=state?.queue?.joined;if(!joined&&!selServer){showStatus('Выбери сервер для поиска матча.',true);return;}const r=await post(joined?'/api/queue/leave':'/api/queue/join',joined?{}:{server:selServer});showStatus(r.message);await refreshState();}
  catch(e){showStatus(e.message,true);}finally{b.disabled=state?queueDisabled(state):false;}
 }
 async function saveRoom(id){
@@ -320,7 +392,7 @@ async function loadAdminMatches(){
   const side=(name,list,hostId)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player" onclick="adminJump('+p.tg_id+')" style="cursor:pointer"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+(p.tg_id===hostId?hostTag():'')+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
   box.innerHTML=r.matches.map(m=>{const min=Math.max(0,Math.floor((r.now-m.created_at)/60));
    return '<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px"><div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">'+(m.status==='review'?'Проверка результата':'Игра идёт')+'</span></div>'
-    +'<div class="hint" style="margin:0 0 6px">Идёт '+min+' мин · скриншотов: '+m.screenshots+' · данные комнаты: '+(m.room_set?'есть':'нет')+'</div>'
+    +'<div class="hint" style="margin:0 0 6px">Идёт '+min+' мин · '+(m.server_label?'сервер: '+escapeHtml(m.server_label)+' · ':'')+(m.map?'карта: '+escapeHtml(m.map)+' · ':(m.veto_phase==='ban'||m.veto_phase==='pick'?'идёт выбор карты · ':''))+'скриншотов: '+m.screenshots+' · данные комнаты: '+(m.room_set?'есть':'нет')+'</div>'
     +side('🟦 '+m.team1_name,m.team1,m.host_id)+side('🟥 '+m.team2_name,m.team2,m.host_id)
     +'<div class="hint">Нажми на игрока, чтобы открыть его в панели. Отменить матч: /cancelmatch '+m.id+'</div></div>';}).join('');
  }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
@@ -328,5 +400,10 @@ async function loadAdminMatches(){
 function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
 function loadAdmin(){loadAdminLog();loadAdminMatches();}
 refreshState();
-setInterval(()=>{if(document.visibilityState==='visible'){refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}},12000);
+(function pollLoop(){
+ setTimeout(async()=>{
+  if(document.visibilityState==='visible'){await refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}
+  pollLoop();
+ },isPending(state&&state.match)?3000:12000);
+})();
 </script></body></html>
