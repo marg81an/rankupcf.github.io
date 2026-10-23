@@ -222,7 +222,15 @@ function tickVeto(){
  const el=document.getElementById('vetoTimer');if(!el||vetoDeadline==null)return;
  const left=Math.max(0,Math.ceil((vetoDeadline-Date.now())/1000));
  el.textContent=left+' с';el.classList.toggle('low',left<=10);
- if(left===0&&!vetoPolled){vetoPolled=true;setTimeout(refreshState,1200);}
+ if(left===0&&!vetoPolled){
+  vetoPolled=true;
+  setTimeout(async()=>{
+   await refreshState();
+   if(window._openTourId&&document.getElementById('trOvl')?.classList.contains('show')){
+    try{await openTournament(window._openTourId);}catch(e){}
+   }
+  },1200);
+ }
 }
 setInterval(tickVeto,1000);
 function vetoBlock(m){
@@ -257,8 +265,8 @@ async function vetoMap(name){
  const m=state?.match;if(!m||!m.veto||!m.veto.your_turn)return;
  const ban=m.veto.phase==='ban';
  if(!await ask((ban?'Забанить карту ':'Играть на карте ')+name+'?'))return;
- try{const r=await post('/api/match/veto',{match_id:m.id,map:name});notify(r.message);await refreshState();}
- catch(e){notify(e.message,true);await refreshState();}
+ try{const r=await post('/api/match/veto',{match_id:m.id,map:name});notify(r.message);await refreshState();if(window._openTourId)await openTournament(window._openTourId);}
+ catch(e){notify(e.message,true);await refreshState();if(window._openTourId)await openTournament(window._openTourId);}
 }
 function renderMatch(m){
  const box=document.getElementById('matchCard');
@@ -308,7 +316,7 @@ async function toggleQueue(){
 function copyRoom(){const t=document.getElementById('roomDataText')?.textContent||'';if(!t)return;const done=()=>showStatus('Данные комнаты скопированы.');const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy');done();}catch(e){showStatus('Не удалось скопировать — выдели текст вручную.',true);}a.remove();};if(navigator.clipboard?.writeText){navigator.clipboard.writeText(t).then(done,fb);}else fb();}
 async function saveRoom(id){
  const value=document.getElementById('roomData')?.value?.trim();if(!value){showStatus('Введи данные комнаты.',true);return;}
- try{const r=await request('/api/match/room',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({match_id:id,room_data:value})});showStatus(r.message);await refreshState();}
+ try{const r=await request('/api/match/room',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({match_id:id,room_data:value})});showStatus(r.message);await refreshState();if(window._openTourId)await openTournament(window._openTourId);}
  catch(e){showStatus(e.message,true);}
 }
 function resultPhotosChanged(input){
@@ -321,7 +329,7 @@ async function uploadResult(id){
  const input=document.getElementById('resultPhoto'),files=[...(input?.files||[])];if(!files.length){showStatus('Сначала выбери скриншот.',true);return;}
  if(files.length>3){showStatus('Можно отправить до 3 скриншотов за раз.',true);return;}
  const form=new FormData();form.append('match_id',String(id));files.forEach(f=>form.append('photos',f));
- try{const r=await request('/api/match/screenshot',{method:'POST',body:form});showStatus(r.message);input.value='';await refreshState();}
+ try{const r=await request('/api/match/screenshot',{method:'POST',body:form});showStatus(r.message);input.value='';await refreshState();if(window._openTourId)await openTournament(window._openTourId);}
  catch(e){showStatus(e.message,true);}
 }
 if(tg?.initDataUnsafe?.user){const u=tg.initDataUnsafe.user;document.getElementById('avatar').textContent=(u.first_name||'R')[0].toUpperCase();}
@@ -624,9 +632,16 @@ setInterval(async()=>{
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshState();});
 (function pollLoop(){
  setTimeout(async()=>{
-  if(document.visibilityState==='visible'){await refreshState();if(document.getElementById('friends').classList.contains('active'))refreshSocial();}
+  if(document.visibilityState==='visible'){
+   await refreshState();
+   if(document.getElementById('friends').classList.contains('active'))refreshSocial();
+   // Пока открыт турнир с активным баном/пиком — обновляем карточку матча (таймер, ходы)
+   if(window._openTourId&&document.getElementById('trOvl')?.classList.contains('show')){
+    try{await openTournament(window._openTourId);}catch(e){}
+   }
+  }
   pollLoop();
- },(isPending(state&&state.match)||(state&&state.party&&state.party.size>1))?4000:12000);
+ },(isPending(state&&state.match)||(state&&state.party&&state.party.size>1)||window._openTourId)?4000:12000);
 })();
 </script><style>
 :root{--bg:#07070a;--panel:#0e0e13;--panel2:#16161d;--orange:#ff7a1a;--line:#3a2417;--muted:#9a9aa6}
@@ -806,7 +821,6 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
     :'<div class="card"><div class="empty">Сейчас нет турниров. Загляни позже — администратор скоро добавит новые.</div></div>';
   }catch(e){box.innerHTML='<div class="card"><div class="empty">'+escapeHtml(e.message)+'</div></div>';}
  };
- window.closeTournament=function(){document.getElementById('trOvl').classList.remove('show');};
  function info(label,val){return '<div class="tinfo"><small>'+label+'</small><div>'+escapeHtml(val||'—')+'</div></div>';}
  function renderBracket(br){
   if(!br||!br.length)return '';
@@ -826,8 +840,10 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
   });
   return h;
  }
+ window._openTourId=null;
  window.openTournament=async function(id){
   buzz();
+  window._openTourId=id;
   document.getElementById('trBody').innerHTML='<div class="empty">Загрузка…</div>';
   document.getElementById('trOvl').classList.add('show');
   let t;
@@ -853,10 +869,13 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
   if(t.match){
    // Полноценный интерфейс матча (как на вкладке «Найти матч»)
    const m=t.match;
-   // временно кладём в state, чтобы vetoMap/saveRoom работали
+   // кладём в state, чтобы vetoMap/saveRoom/uploadResult работали
    if(!window.state)window.state={};
    window.state.match=m;
+   setVetoDeadline(m);
    matchHtml='<div class="title" style="margin-top:14px">Твой матч турнира</div><div id="tourMatchCard"></div>';
+  }else{
+   setVetoDeadline(null);
   }
   document.getElementById('trBody').innerHTML='<div class="row" style="padding:0 0 8px;border:0"><b style="font-size:17px">'+escapeHtml(t.title)+'</b><button class="mini pvx" onclick="closeTournament()" aria-label="Закрыть"><svg class="ic"><use href="#i-x"/></svg></button></div>'
    +'<div class="tm" style="display:flex;flex-wrap:wrap;gap:6px">'+pills(t)+'<span class="pill">'+escapeHtml(fmtSlots(t))+'</span>'+(t.status==='bracketed'?'<span class="pill ok">Сетка готова</span>':'')+'</div>'
@@ -880,10 +899,11 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
     +vetoBlock(m)+team((m.team1_name||'Игрок 1'),m.team1,m.team1_side)+team((m.team2_name||'Игрок 2'),m.team2,m.team2_side);
    if(!pending&&m.host&&!m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
    if(!pending&&m.room_data) html+='<div class="title" style="margin-top:12px">Данные комнаты</div><div class="card" style="margin-top:6px;font-size:13px;white-space:pre-wrap">'+escapeHtml(m.room_data)+'</div>';
-   if(!pending) html+='<div class="title" style="margin-top:12px">Результат</div><p class="muted" style="font-size:12px">Отправь скриншот результата — админ подтвердит победителя.</p><button class="btn" onclick="sendShot('+m.id+')">ОТПРАВИТЬ СКРИНШОТ</button>';
+   if(!pending) html+='<div class="title" style="margin-top:12px">Результат</div><p class="muted" style="font-size:12px">Отправь скриншот результата — админ подтвердит победителя.</p><input class="upload" type="file" id="resultPhoto" accept="image/*" multiple onchange="resultPhotosChanged(this)"><div class="hint" id="resultPhotoCount"></div><button class="btn" onclick="uploadResult('+m.id+')">ОТПРАВИТЬ СКРИНШОТ</button>';
    box.innerHTML=html;
   }
  };
+ window.closeTournament=function(){document.getElementById('trOvl').classList.remove('show');window._openTourId=null;};
  window.tourAct=async function(id,what){
   const b=document.getElementById('trBtn');if(b)b.disabled=true;
   try{const r=await request('/api/tournaments/'+id+'/'+what,{method:'POST'});closeTournament();showStatus(r.message);await loadTournaments();}
