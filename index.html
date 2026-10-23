@@ -154,7 +154,7 @@ body{background:#000}
  <div class="card" id="lbList"><div class="empty">Загрузка таблицы…</div></div>
  <button class="btn ghost" style="margin-top:12px" onclick="go('profile')"><svg class="ic"><use href="#i-arrow-left"/></svg>НАЗАД В ПРОФИЛЬ</button>
 </section>
-<section class="page" id="tournaments"><div class="eyebrow">TOURNAMENTS</div><h1 style="font-size:27px;margin:8px 0 4px">Турниры</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Выбери турнир, чтобы посмотреть формат, призовые и взнос, и зарегистрироваться.</p>
+<section class="page" id="tournaments"><div class="eyebrow">TOURNAMENTS</div><h1 style="font-size:27px;margin:8px 0 4px">Турниры</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Выбери турнир, посмотри формат, призовые и взнос, и подай заявку — её рассмотрит администратор.</p>
  <div id="tourList"><div class="empty">Загрузка турниров…</div></div>
 </section>
 <section class="page" id="friends"><div class="eyebrow">SOCIAL</div><h1 style="font-size:27px;margin:8px 0 4px">Друзья и пати</h1><p class="muted" style="font-size:12px;margin:0 0 6px">Добавляй друзей и играйте вместе. В пати можно звать друзей, у которых разница в рейтинге не больше <b id="eloLimit">300</b> ELO.</p>
@@ -772,10 +772,12 @@ body{background:radial-gradient(120% 60% at 50% -10%,#2a1306 0%,#07070a 55%)}
  const fmtSlots=t=>t.slots?t.registered+' / '+t.slots+' мест':t.registered+' участн.';
  function pills(t){
   let h='';
-  if(t.joined)h+='<span class="pill ok">Вы записаны</span>';
-  else if(t.status!=='open')h+='<span class="pill off">Регистрация закрыта</span>';
+  if(t.my_status==='approved')h+='<span class="pill ok">Вы участник</span>';
+  else if(t.my_status==='pending')h+='<span class="pill hot">Заявка на рассмотрении</span>';
+  else if(t.my_status==='rejected')h+='<span class="pill off">Заявка отклонена</span>';
+  else if(t.status!=='open')h+='<span class="pill off">Приём заявок закрыт</span>';
   else if(t.full)h+='<span class="pill off">Мест нет</span>';
-  else h+='<span class="pill hot">Открыта регистрация</span>';
+  else h+='<span class="pill hot">Открыт приём заявок</span>';
   return h;
  }
  window.loadTournaments=async function(){
@@ -791,15 +793,23 @@ body{background:radial-gradient(120% 60% at 50% -10%,#2a1306 0%,#07070a 55%)}
  function info(label,val){return '<div class="tinfo"><small>'+label+'</small><div>'+escapeHtml(val||'—')+'</div></div>';}
  window.openTournament=function(id){
   const t=(window._tours||[]).find(x=>x.id===id);if(!t)return;buzz();
-  let action='';
-  if(t.joined)action=t.status==='open'?'<button class="btn secondary" id="trBtn" onclick="tourAct('+id+',\'unregister\')">ОТМЕНИТЬ РЕГИСТРАЦИЮ</button>':'';
-  else if(t.status!=='open')action='<button class="btn secondary" disabled>РЕГИСТРАЦИЯ ЗАКРЫТА</button>';
+  let action='',note='';
+  if(t.my_status==='approved'){
+   note='<p class="muted" style="font-size:12px;margin:0 0 10px">Заявка принята — ты участник.'+(t.fee?' Взнос оплачивается администратору, он напишет тебе в Telegram.':'')+'</p>';
+   action=t.status==='open'?'<button class="btn secondary" id="trBtn" onclick="tourAct('+id+',\'unregister\')">ОТМЕНИТЬ УЧАСТИЕ</button>':'';
+  }else if(t.my_status==='pending'){
+   note='<p class="muted" style="font-size:12px;margin:0 0 10px">Администратор рассмотрит заявку. Если примет, бот пришлёт сообщение со всеми деталями.</p>';
+   action='<button class="btn secondary" id="trBtn" onclick="tourAct('+id+',\'unregister\')">ОТОЗВАТЬ ЗАЯВКУ</button>';
+  }else if(t.status!=='open')action='<button class="btn secondary" disabled>ПРИЁМ ЗАЯВОК ЗАКРЫТ</button>';
   else if(t.full)action='<button class="btn secondary" disabled>МЕСТ НЕТ</button>';
-  else action='<button class="btn" id="trBtn" onclick="tourAct('+id+',\'register\')">ЗАРЕГИСТРИРОВАТЬСЯ</button>';
+  else{
+   if(t.my_status==='rejected')note='<p class="muted" style="font-size:12px;margin:0 0 10px">Прошлая заявка была отклонена. Можно подать новую.</p>';
+   action='<button class="btn" id="trBtn" onclick="tourAct('+id+',\'apply\')">ПОДАТЬ ЗАЯВКУ</button>';
+  }
   document.getElementById('trBody').innerHTML='<div class="row" style="padding:0 0 8px;border:0"><b style="font-size:17px">'+escapeHtml(t.title)+'</b><button class="mini pvx" onclick="closeTournament()" aria-label="Закрыть"><svg class="ic"><use href="#i-x"/></svg></button></div>'
    +'<div class="tm" style="display:flex;flex-wrap:wrap;gap:6px">'+pills(t)+'<span class="pill">'+escapeHtml(fmtSlots(t))+'</span></div>'
    +info('Формат турнира',t.format)+info('Призовые',t.prizes)+info('Взнос за участие',t.fee||'Бесплатно')+(t.starts_at?info('Начало',t.starts_at):'')
-   +'<div style="margin-top:16px">'+action+'</div>';
+   +'<div style="margin-top:16px">'+note+action+'</div>';
   document.getElementById('trOvl').classList.add('show');
  };
  window.tourAct=async function(id,what){
