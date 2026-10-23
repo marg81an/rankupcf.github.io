@@ -183,6 +183,7 @@ const API_BASE = 'https://license-conjunction-deeply-continue.trycloudflare.com'
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#000000'); tg.setBackgroundColor('#000000'); } catch(e){} }
 const initData = tg?.initData || '';
+try{window._userTgId=Number(JSON.parse(new URLSearchParams(initData).get('user')||'{}').id)||null;}catch(e){window._userTgId=null;}
 let state = null;
 let selServer = null, lastMatchSig = null, vetoDeadline = null, vetoPolled = false;
 try { selServer = localStorage.getItem('rankupServer'); } catch (e) {}
@@ -808,7 +809,7 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
  };
  window.closeTournament=function(){document.getElementById('trOvl').classList.remove('show');};
  function info(label,val){return '<div class="tinfo"><small>'+label+'</small><div>'+escapeHtml(val||'—')+'</div></div>';}
- window.openTournament=function(id){
+ window.openTournament=async function(id){
   const t=(window._tours||[]).find(x=>x.id===id);if(!t)return;buzz();
   let action='',note='';
   if(t.my_status==='approved'){
@@ -826,13 +827,45 @@ button.map.avail:active .mimg{filter:brightness(1.25)}
   document.getElementById('trBody').innerHTML='<div class="row" style="padding:0 0 8px;border:0"><b style="font-size:17px">'+escapeHtml(t.title)+'</b><button class="mini pvx" onclick="closeTournament()" aria-label="Закрыть"><svg class="ic"><use href="#i-x"/></svg></button></div>'
    +'<div class="tm" style="display:flex;flex-wrap:wrap;gap:6px">'+pills(t)+'<span class="pill">'+escapeHtml(fmtSlots(t))+'</span></div>'
    +info('Формат турнира',t.format)+info('Призовые',t.prizes)+info('Взнос за участие',t.fee||'Бесплатно')+(t.starts_at?info('Начало',t.starts_at):'')
-   +'<div style="margin-top:16px">'+note+action+'</div>';
+   +'<div style="margin-top:16px">'+note+action+'</div>'
+   +'<div id="tourBracket" style="margin-top:18px"></div>';
   document.getElementById('trOvl').classList.add('show');
+  if(t.full || t.my_status==='approved') await loadTournamentBracket(id);
  };
  window.tourAct=async function(id,what){
   const b=document.getElementById('trBtn');if(b)b.disabled=true;
   try{const r=await request('/api/tournaments/'+id+'/'+what,{method:'POST'});closeTournament();showStatus(r.message);await loadTournaments();}
   catch(e){closeTournament();showStatus(e.message,true);await loadTournaments();}
+ };
+ window.loadTournamentBracket=async function(id){
+  const box=document.getElementById('tourBracket');if(!box)return;
+  try{
+   const r=await request('/api/tournaments/'+id+'/bracket');window._tourBracket=r;window._tourId=id;
+   if(!r.matches.length){box.innerHTML='<div class="title">Сетка турнира</div><div class="card"><div class="empty">Сетка появится, когда будут приняты все участники.</div></div>';return;}
+   const rounds={};r.matches.forEach(m=>(rounds[m.round]||(rounds[m.round]=[])).push(m));
+   let html='<div class="row" style="padding:0 0 8px;border:0"><b class="title" style="margin:0">Сетка турнира</b><button class="mini" onclick="loadTournamentBracket('+id+')">ОБНОВИТЬ</button></div>';
+   if(!r.started)html+='<div class="card" style="margin-bottom:10px"><div class="muted" style="font-size:12px">Матчи откроются в назначенное время: <b>'+escapeHtml(r.starts_at||'время не указано')+'</b></div></div>';
+   Object.keys(rounds).sort((a,b)=>+a-+b).forEach(round=>{html+='<div class="title">'+(+round===Object.keys(rounds).length?'Финальные этапы':'Раунд '+round)+'</div>';rounds[round].forEach(m=>{
+    const p1=m.player1,p2=m.player2;const n1=p1?escapeHtml(p1.game_nick):'Ожидает соперника',n2=p2?escapeHtml(p2.game_nick):'Ожидает соперника';
+    html+='<div class="card" style="margin:8px 0"><div class="row"><b>Матч '+m.round+'.'+m.number+'</b><span class="pill '+(m.status==='finished'?'ok':m.started?'hot':'')+'">'+(m.status==='finished'?'Завершён':m.started?'Матч доступен':m.status==='waiting'?'Ожидание соперников':'Запланирован')+'</span></div>'
+      +'<div class="row"><span>'+n1+'</span><b>'+(m.winner&&p1&&m.winner.tg_id===p1.tg_id?'🏆':'')+'</b></div><div class="row"><span>'+n2+'</span><b>'+(m.winner&&p2&&m.winner.tg_id===p2.tg_id?'🏆':'')+'</b></div>';
+    if(m.started&&m.status==='active'&&m.your_player){
+      html+='<div class="sep"></div><div class="muted" style="font-size:11px">Карта: <b>'+(m.map_final?escapeHtml(m.map_final):'идёт бан карт')+'</b> · Твоя сторона: <b>'+((p1&&p1.tg_id===window._userTgId)?(m.side1||'T'):(m.side1==='T'?'CT':'T'))+'</b>';
+      if(m.host_id)html+=' · Хост: <b>'+((p1&&p1.tg_id===m.host_id)?n1:n2)+'</b>';
+      html+='</div>';
+      if(!m.map_final){html+='<div class="title">Бан карт</div><div class="two">';m.maps.forEach(mp=>{if(mp.status==='available'&&m.your_turn)html+='<button class="btn secondary" onclick="tourMatchAction('+m.id+',\'veto\',\''+mp.name+'\')">ЗАБАНИТЬ '+escapeHtml(mp.name)+'</button>';else if(mp.status==='available')html+='<button class="btn ghost" disabled>'+escapeHtml(mp.name)+' · ОЖИДАНИЕ</button>';else html+='<button class="btn ghost" disabled>'+escapeHtml(mp.name)+(mp.status==='banned'?' · БАН':'')+'</button>';});html+='</div>'; }
+      if(m.map_final){if(m.host_id===window._userTgId&&!m.room_data)html+='<label class="fl">Данные комнаты</label><input class="input" id="tourRoom'+m.id+'" placeholder="IP / пароль / ссылка комнаты"><button class="btn secondary" style="margin-top:8px" onclick="tourMatchAction('+m.id+',\'room\')">ОТПРАВИТЬ ДАННЫЕ КОМНАТЫ</button>';
+       if(m.room_data)html+='<div class="roomcard"><div class="rc-title">Данные комнаты</div><div class="rc-data">'+escapeHtml(m.room_data)+'</div></div>';
+       if(m.room_data)html+='<div class="title">Отправить результат</div><div class="two"><button class="btn" onclick="tourMatchAction('+m.id+',\'result\','+(p1?p1.tg_id:0)+')">ПОБЕДИЛ '+n1+'</button><button class="btn" onclick="tourMatchAction('+m.id+',\'result\','+(p2?p2.tg_id:0)+')">ПОБЕДИЛ '+n2+'</button></div>';
+      }
+    }
+    html+='</div>';});});box.innerHTML=html;
+  }catch(e){box.innerHTML='<div class="card"><div class="empty">'+escapeHtml(e.message)+'</div></div>';}
+ };
+ window.tourMatchAction=async function(matchId,action,value){
+  const body={match_id:matchId,action};if(action==='veto')body.map=value;if(action==='result')body.winner=value;if(action==='room')body.room_data=document.getElementById('tourRoom'+matchId)?.value||'';
+  try{const r=await request('/api/tournaments/match/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});showStatus(r.message);await loadTournamentBracket(window._tourId);}
+  catch(e){showStatus(e.message,true);await loadTournamentBracket(window._tourId);}
  };
 })();
 </script>
