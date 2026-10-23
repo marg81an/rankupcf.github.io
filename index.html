@@ -7,6 +7,7 @@
 <style>
 :root{color-scheme:dark;--bg:#000;--panel:#0d0d0d;--panel2:#161616;--muted:#8a8a8a;--orange:#fff;--line:#262626;--white:#fff;--green:#fff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:15px/1.4 system-ui,-apple-system,sans-serif;padding:0 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}.wrap{max-width:680px;margin:auto;padding:16px 15px 24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:22px;font-weight:1000}.brand span,.orange{color:var(--orange)}.sub{font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:800}.avatar{width:42px;height:42px;border-radius:14px;background:#1a1a1a;display:grid;place-items:center;font-weight:900}.page{display:none}.page.active{display:block}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--orange);font-weight:900}.hero{background:radial-gradient(circle at 100% 0,#ffffff1c 0,transparent 45%),#0a0a0a;border:1px solid #333;border-radius:20px;padding:21px 18px;margin-bottom:12px}.hero h1{font-size:29px;line-height:1.1;margin:12px 0 9px;letter-spacing:-.7px}.hero p{font-size:13px;color:#b5b5b5;margin:0 0 17px}.btn{width:100%;min-height:47px;border:0;border-radius:12px;background:var(--orange);color:#000;font-size:13px;font-weight:950;cursor:pointer;padding:12px 14px}.btn:disabled{opacity:.5}.btn.secondary{background:#1a1a1a;border:1px solid #333}.btn.ghost{background:transparent;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px}.stat small,.muted{color:var(--muted)}.number{font-size:24px;font-weight:950;margin-top:4px}.hint{font-size:10px;color:var(--muted);margin-top:3px}
+.matchscore{margin-top:6px;font-size:13px;font-weight:800;letter-spacing:.01em}
 .sidecard{margin:12px 0;padding:14px;border-radius:14px;background:var(--panel2);border:2px solid var(--muted);text-align:center}
 .sidecard small{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .sidecard b{font-size:20px;font-weight:800}
@@ -263,7 +264,7 @@ function renderMatch(m){
  if(m.room_data) html+='<div class="roomcard"><div class="rc-title"><svg class="ic"><use href="#i-alert"/></svg> Данные комнаты — заходи!</div><div class="rc-data" id="roomDataText">'+escapeHtml(m.room_data)+'</div><button class="btn secondary" onclick="copyRoom()">СКОПИРОВАТЬ ДАННЫЕ</button></div>';
  if(pending)html+='<div class="hint" style="margin-top:12px">Данные комнаты и отправка скриншота откроются, когда капитаны выберут карту.</div>';
  if(!pending&&m.host && !m.room_data) html+='<div class="title" style="margin-top:12px">Ты хост — введи данные комнаты</div><div class="hint" style="margin:6px 0"><svg class="ic"><use href="#i-alert"/></svg> <b>Сначала создай комнату с обязательными настройками:</b><br>• Матч → Победных раундов: 13 (остальное по умолчанию)<br>• Доступ → Макс. кол-во игроков: 10 (остальное по умолчанию)<br>• Турнир → Не начинать матч, пока не соберётся состав: Вкл<br>• Турнир → Нужно игроков: 10<br>• Турнир → Замок составов: Вкл</div><textarea class="textarea" id="roomData" placeholder="Адрес / пароль / ссылка комнаты"></textarea><button class="btn secondary" onclick="saveRoom('+m.id+')">СОХРАНИТЬ ДАННЫЕ КОМНАТЫ</button>';
- if(!pending&&(m.status==='active'||m.status==='review')&&m.room_data) html+='<div class="title" style="margin-top:15px">Отправить результат</div><input class="upload" type="file" id="resultPhoto" accept="image/*"><button class="btn secondary" onclick="uploadResult('+m.id+')"><svg class="ic"><use href="#i-camera"/></svg> ОТПРАВИТЬ СКРИНШОТ</button>';
+ if(!pending&&(m.status==='active'||m.status==='review')&&m.room_data) html+='<div class="title" style="margin-top:15px">Отправить результат</div><div class="hint" style="margin:0 0 6px">Можно выбрать до 3 скриншотов сразу (например, счёт и таблицу игроков).</div><input class="upload" type="file" id="resultPhoto" accept="image/*" multiple onchange="resultPhotosChanged(this)"><div class="hint" id="resultPhotoCount"></div><button class="btn secondary" onclick="uploadResult('+m.id+')"><svg class="ic"><use href="#i-camera"/></svg> ОТПРАВИТЬ СКРИНШОТЫ</button>';
  else if(!pending&&(m.status==='active'||m.status==='review')&&!m.room_data) html+='<div class="title" style="margin-top:15px">Отправка результата закрыта</div><div class="empty">Сначала хост должен сохранить данные комнаты. После этого отправка скриншота станет доступна.</div>';
  box.innerHTML=html;
 }
@@ -289,7 +290,7 @@ async function refreshState(){
   setVetoDeadline(s.match);
   const sig=JSON.stringify(s.match,(k,v)=>k==='seconds_left'?undefined:v);
   if(sig!==lastMatchSig){lastMatchSig=sig;renderMatch(s.match);}
-  document.getElementById('history').innerHTML=s.history.length?s.history.map(x=>'<div class="item" style="cursor:pointer;display:block" onclick="toggleMatchDetails('+x.id+',this)"><div style="display:flex;justify-content:space-between;gap:8px"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+(x.mvp?mvpTag():'')+' <span class="muted">⌄</span></span><b class="'+(x.delta>0?'orange':'')+'">'+(x.status==='finished'?(x.delta>0?'+':'')+x.delta+' ELO':'—')+'</b></div><div class="matchDetails muted" style="display:none;margin-top:10px">Нажми, чтобы загрузить статистику</div></div>').join(''):'<div class="empty">История матчей пока пуста.</div>';
+  document.getElementById('history').innerHTML=s.history.length?s.history.map(x=>'<div class="item" style="cursor:pointer;display:block" onclick="toggleMatchDetails('+x.id+',this)"><div style="display:flex;justify-content:space-between;gap:8px"><span>Матч #'+x.id+' · '+escapeHtml(x.label)+(x.mvp?mvpTag():'')+' <span class="muted">⌄</span></span><b class="'+(x.delta>0?'orange':'')+'">'+(x.status==='finished'?(x.delta>0?'+':'')+x.delta+' ELO':'—')+'</b></div>'+(x.score?'<div class="matchscore">'+escapeHtml(x.score)+'</div>':'')+'<div class="matchDetails muted" style="display:none;margin-top:10px">Нажми, чтобы загрузить статистику</div></div>').join(''):'<div class="empty">История матчей пока пуста.</div>';
   document.getElementById('top').innerHTML=s.top.length?s.top.map(x=>'<div class="item"><span class="tap" style="cursor:pointer" onclick="openPlayer('+x.tg_id+')">'+rankBadge(x.rank)+' '+escapeHtml(x.game_nick)+lvl(x.level)+'</span><b>'+x.elo+' ELO</b></div>').join(''):'<div class="empty">Игроков пока нет.</div>';
  }catch(e){lastMatchSig=null;showStatus(e.message,true);document.getElementById('matchCard').innerHTML='<div class="empty">Не удалось подключиться к серверу.<br>'+escapeHtml(e.message)+'</div>';document.getElementById('queueBtn').disabled=true;}
 }
@@ -304,10 +305,16 @@ async function saveRoom(id){
  try{const r=await request('/api/match/room',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({match_id:id,room_data:value})});showStatus(r.message);await refreshState();}
  catch(e){showStatus(e.message,true);}
 }
+function resultPhotosChanged(input){
+ const n=input.files?input.files.length:0,box=document.getElementById('resultPhotoCount');
+ if(box)box.textContent=n>3?'Выбрано '+n+' — оставь не больше 3.':(n?'Выбрано скриншотов: '+n:'');
+ if(n>3)showStatus('Можно отправить до 3 скриншотов за раз.',true);
+}
 async function uploadResult(id){
  if(!state?.match?.room_data){showStatus('Нельзя отправить результат: сначала хост должен сохранить данные комнаты.',true);return;}
- const input=document.getElementById('resultPhoto'),file=input?.files?.[0];if(!file){showStatus('Сначала выбери скриншот.',true);return;}
- const form=new FormData();form.append('match_id',String(id));form.append('photo',file);
+ const input=document.getElementById('resultPhoto'),files=[...(input?.files||[])];if(!files.length){showStatus('Сначала выбери скриншот.',true);return;}
+ if(files.length>3){showStatus('Можно отправить до 3 скриншотов за раз.',true);return;}
+ const form=new FormData();form.append('match_id',String(id));files.forEach(f=>form.append('photos',f));
  try{const r=await request('/api/match/screenshot',{method:'POST',body:form});showStatus(r.message);input.value='';await refreshState();}
  catch(e){showStatus(e.message,true);}
 }
@@ -486,7 +493,7 @@ let adminSel=null,adminResults=[];
 async function toggleMatchDetails(id,el){
  const box=el.querySelector('.matchDetails');if(box.style.display==='block'){box.style.display='none';return;}box.style.display='block';box.textContent='Загрузка статистики…';
  try{const r=await request('/api/match/'+id+'/details');const render=(name,arr)=>'<div style="margin-top:8px"><b>'+name+'</b>'+arr.map(p=>'<div class="item'+(p.tg_id===r.mvp_id?' mvprow':'')+'"><span>'+escapeHtml(p.game_nick)+(p.tg_id===r.mvp_id?mvpTag():'')+'</span><span>УБ '+(p.kills??'—')+' · ПМ '+(p.assists??'—')+' · СМ '+(p.deaths??'—')+'</span></div>').join('')+'</div>';
- box.innerHTML=(r.stats_added?render('Команда 1',r.team1)+render('Команда 2',r.team2):'Администратор ещё не добавил подробную статистику.')+'<div class="hint">УБ — убийства · ПМ — помощь · СМ — смерти</div>';
+ box.innerHTML=(r.score?'<div class="matchscore" style="margin:0 0 6px">Итоговый счёт: '+escapeHtml(r.score.text)+'</div>':'')+(r.stats_added?render('Команда 1',r.team1)+render('Команда 2',r.team2):'Администратор ещё не добавил подробную статистику.')+'<div class="hint">УБ — убийства · ПМ — помощь · СМ — смерти</div>';
  }catch(e){box.textContent=e.message;}
 }
 
@@ -570,18 +577,26 @@ async function loadAdminMatches(){
     +'<div class="hint">'+(m.status==='finished'?'Результат подтверждён.':'Матч ещё не завершён. Подробная статистика откроется после подтверждения результата.')+'</div></div>';}).join('');
  }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
 }
+const adminSides={};
 async function loadAdminFinishedMatches(){
  const box=document.getElementById('adminFinishedMatches');
  try{
   const r=await request('/api/admin/finished-matches');
   if(!r.matches.length){box.innerHTML='<div class="empty">Завершённых матчей пока нет.</div>';return;}
   const side=(name,list)=>'<div class="team"><h3>'+escapeHtml(name)+'</h3>'+list.map(p=>'<div class="player"><span class="pl">'+avatarTag(p)+'<span class="pi"><b>'+escapeHtml(p.game_nick)+lvl(p.level)+'</b><small>ID '+escapeHtml(p.game_id)+'</small></span></span><b>'+p.elo+'</b></div>').join('')+'</div>';
+  const scoreBlock=m=>{
+   adminSides[m.id]=m.team1_side||null;
+   const tFirst=m.team1_side!=='CT',hasSides=!!m.team1_side;
+   const left=tFirst?m.score1:m.score2,right=tFirst?m.score2:m.score1;
+   return '<div class="title">Итоговый счёт матча</div><div class="hint">'+(hasSides?'Первой укажи команду, которая начинала за Terrorists. ':'')+'Ничья допустима; иначе у победившей команды должно быть больше раундов.</div>'
+    +'<div class="grid" style="margin:6px 0 10px;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end"><label class="muted">'+(hasSides?'Terrorists':'Команда 1')+'<input class="input" type="number" min="0" max="99" id="scoreL'+m.id+'" value="'+(left??'')+'"></label><b style="padding-bottom:12px">:</b><label class="muted">'+(hasSides?'Counter-Terrorists':'Команда 2')+'<input class="input" type="number" min="0" max="99" id="scoreR'+m.id+'" value="'+(right??'')+'"></label></div>';
+  };
   box.innerHTML=r.matches.map(m=>'<div style="padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px">'
-   +'<div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">Завершён</span></div>'
+   +'<div class="row" style="padding-top:0"><b>Матч #'+m.id+'</b><span class="pill">Завершён</span></div>'+(m.score?'<div class="matchscore">'+escapeHtml(m.score)+'</div>':'')
    +'<div class="hint" style="margin:0 0 6px">'+(m.server_label?'Сервер: '+escapeHtml(m.server_label)+' · ':'')+(m.map?'Карта: '+escapeHtml(m.map):'')+'</div>'
    +side('Команда 1 · '+m.team1_name,m.team1)+side('Команда 2 · '+m.team2_name,m.team2)
    +'<div class="title">Подробная статистика</div><div class="hint">Укажи убийства, помощь и смерти для каждого игрока и выбери MVP матча. Данные можно исправлять и сохранять повторно.</div>'
-   +'<div id="matchStatsForm'+m.id+'">'+m.team1.concat(m.team2).map(p=>{const old=(m.stats||[]).find(x=>x.tg_id===p.tg_id)||{};return '<div class="card" style="margin:8px 0;padding:10px"><b>'+escapeHtml(p.game_nick)+'</b><div class="grid" style="margin:6px 0;grid-template-columns:repeat(3,1fr);gap:8px"><label class="muted">Убийства<input class="input" type="number" min="0" max="999" data-stat="kills" data-uid="'+p.tg_id+'" value="'+(old.kills??0)+'"></label><label class="muted">Помощь<input class="input" type="number" min="0" max="999" data-stat="assists" data-uid="'+p.tg_id+'" value="'+(old.assists??0)+'"></label><label class="muted">Смерти<input class="input" type="number" min="0" max="999" data-stat="deaths" data-uid="'+p.tg_id+'" value="'+(old.deaths??0)+'"></label></div></div>';}).join('')+'<label class="fl" for="mvpSel'+m.id+'">MVP матча</label><select class="input" id="mvpSel'+m.id+'"><option value="">Без MVP</option>'+m.team1.concat(m.team2).map(p=>'<option value="'+p.tg_id+'"'+(m.mvp_id===p.tg_id?' selected':'')+'>'+escapeHtml(p.game_nick)+'</option>').join('')+'</select>'+'<button class="btn" onclick="saveMatchStats('+m.id+')">СОХРАНИТЬ СТАТИСТИКУ</button></div></div>').join('');
+   +'<div id="matchStatsForm'+m.id+'">'+scoreBlock(m)+m.team1.concat(m.team2).map(p=>{const old=(m.stats||[]).find(x=>x.tg_id===p.tg_id)||{};return '<div class="card" style="margin:8px 0;padding:10px"><b>'+escapeHtml(p.game_nick)+'</b><div class="grid" style="margin:6px 0;grid-template-columns:repeat(3,1fr);gap:8px"><label class="muted">Убийства<input class="input" type="number" min="0" max="999" data-stat="kills" data-uid="'+p.tg_id+'" value="'+(old.kills??0)+'"></label><label class="muted">Помощь<input class="input" type="number" min="0" max="999" data-stat="assists" data-uid="'+p.tg_id+'" value="'+(old.assists??0)+'"></label><label class="muted">Смерти<input class="input" type="number" min="0" max="999" data-stat="deaths" data-uid="'+p.tg_id+'" value="'+(old.deaths??0)+'"></label></div></div>';}).join('')+'<label class="fl" for="mvpSel'+m.id+'">MVP матча</label><select class="input" id="mvpSel'+m.id+'"><option value="">Без MVP</option>'+m.team1.concat(m.team2).map(p=>'<option value="'+p.tg_id+'"'+(m.mvp_id===p.tg_id?' selected':'')+'>'+escapeHtml(p.game_nick)+'</option>').join('')+'</select>'+'<button class="btn" onclick="saveMatchStats('+m.id+')">СОХРАНИТЬ СТАТИСТИКУ</button></div></div>').join('');
  }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
 }
 async function saveMatchStats(matchId){
@@ -589,7 +604,14 @@ async function saveMatchStats(matchId){
  const ids=[...new Set([...form.querySelectorAll('[data-uid]')].map(x=>x.dataset.uid))];
  const players=ids.map(id=>{const read=k=>Number(form.querySelector('[data-uid="'+id+'"][data-stat="'+k+'"]').value);return {tg_id:Number(id),kills:read('kills'),assists:read('assists'),deaths:read('deaths')};});
  if(players.some(p=>!Number.isInteger(p.tg_id)||p.tg_id<=0||['kills','assists','deaths'].some(k=>!Number.isInteger(p[k])||p[k]<0||p[k]>999))){notify('Убийства, помощь и смерти должны быть целыми числами от 0 до 999.',true);return;}
- try{const mv=document.getElementById('mvpSel'+matchId),mvp_id=mv&&mv.value?Number(mv.value):null;const r=await post('/api/admin/match-stats',{match_id:matchId,players,mvp_id});notify(r.message);await loadAdminFinishedMatches();}catch(e){notify(e.message,true);}
+ const sl=document.getElementById('scoreL'+matchId),sr=document.getElementById('scoreR'+matchId);
+ const hasL=sl&&sl.value!=='',hasR=sr&&sr.value!=='';
+ if(hasL!==hasR){notify('Укажи счёт обеих команд или оставь оба поля пустыми.',true);return;}
+ let score_team1=null,score_team2=null;
+ if(hasL){const L=Number(sl.value),R=Number(sr.value);
+  if(![L,R].every(v=>Number.isInteger(v)&&v>=0&&v<=99)){notify('Счёт должен быть целым числом от 0 до 99.',true);return;}
+  if(adminSides[matchId]==='CT'){score_team1=R;score_team2=L;}else{score_team1=L;score_team2=R;}}
+ try{const mv=document.getElementById('mvpSel'+matchId),mvp_id=mv&&mv.value?Number(mv.value):null;const r=await post('/api/admin/match-stats',{match_id:matchId,players,mvp_id,score_team1,score_team2});notify(r.message);await loadAdminFinishedMatches();}catch(e){notify(e.message,true);}
 }
 function adminJump(id){document.getElementById('adminQ').value=String(id);window.scrollTo({top:0,behavior:'smooth'});adminSearch();}
 function loadAdmin(){loadAdminLog();loadAdminMatches();loadAdminFinishedMatches();}
