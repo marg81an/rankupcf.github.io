@@ -154,6 +154,9 @@ body{background:#000}
  <div class="card" id="lbList"><div class="empty">Загрузка таблицы…</div></div>
  <button class="btn ghost" style="margin-top:12px" onclick="go('profile')"><svg class="ic"><use href="#i-arrow-left"/></svg>НАЗАД В ПРОФИЛЬ</button>
 </section>
+<section class="page" id="tournaments"><div class="eyebrow">TOURNAMENTS</div><h1 style="font-size:27px;margin:8px 0 4px">Турниры</h1><p class="muted" style="font-size:12px;margin:0 0 15px">Выбери турнир, чтобы посмотреть формат, призовые и взнос, и зарегистрироваться.</p>
+ <div id="tourList"><div class="empty">Загрузка турниров…</div></div>
+</section>
 <section class="page" id="friends"><div class="eyebrow">SOCIAL</div><h1 style="font-size:27px;margin:8px 0 4px">Друзья и пати</h1><p class="muted" style="font-size:12px;margin:0 0 6px">Добавляй друзей и играйте вместе. В пати можно звать друзей, у которых разница в рейтинге не больше <b id="eloLimit">300</b> ELO.</p>
  <div id="partyInvites"></div>
  <div class="title">Моя пати</div><div class="card" id="partyCard"><div class="empty">Загрузка…</div></div>
@@ -169,8 +172,9 @@ body{background:#000}
  <div class="row" style="border:0;padding:0;margin:22px 0 10px"><div class="title" style="margin:0">Завершённые матчи · статистика</div><button class="mini" onclick="loadAdminFinishedMatches()">Обновить</button></div><div class="card" id="adminFinishedMatches"><div class="empty">Загрузка завершённых матчей…</div></div>
  <div class="title">Последние действия</div><div class="card" id="adminLog"><div class="empty">Загрузка журнала…</div></div>
 </section>
-</div><nav class="nav"><button class="active" data-page="home"><span class="ico"><svg class="ic"><use href="#i-home"/></svg></span>Главная</button><button data-page="find"><span class="ico"><svg class="ic"><use href="#i-search"/></svg></span>Найти матч</button><button data-page="stats"><span class="ico"><svg class="ic"><use href="#i-chart"/></svg></span>Статистика</button><button data-page="friends"><span class="ico"><svg class="ic"><use href="#i-users"/></svg></span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico"><svg class="ic"><use href="#i-user"/></svg></span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico"><svg class="ic"><use href="#i-shield"/></svg></span>Админ</button></nav>
+</div><nav class="nav"><button class="active" data-page="home"><span class="ico"><svg class="ic"><use href="#i-home"/></svg></span>Главная</button><button data-page="find"><span class="ico"><svg class="ic"><use href="#i-search"/></svg></span>Найти матч</button><button data-page="stats"><span class="ico"><svg class="ic"><use href="#i-chart"/></svg></span>Статистика</button><button data-page="tournaments"><span class="ico"><svg class="ic"><use href="#i-trophy"/></svg></span>Турниры</button><button data-page="friends"><span class="ico"><svg class="ic"><use href="#i-users"/></svg></span>Друзья<span class="dot" id="friendsDot"></span></button><button data-page="profile"><span class="ico"><svg class="ic"><use href="#i-user"/></svg></span>Профиль</button><button data-page="admin" id="navAdmin" style="display:none"><span class="ico"><svg class="ic"><use href="#i-shield"/></svg></span>Админ</button></nav>
 <div class="ovl" id="newsOvl" onclick="if(event.target===this)closeNews()"><div class="sheet" id="newsBody"></div></div>
+<div class="ovl" id="trOvl" onclick="if(event.target===this)closeTournament()"><div class="sheet" id="trBody"></div></div>
 <div class="ovl" id="pv" onclick="if(event.target===this)closePlayer()"><div class="sheet" id="pvBody"></div></div>
 <script>
 // IMPORTANT: set this to your public HTTPS API URL after starting Cloudflare Tunnel.
@@ -185,7 +189,7 @@ try { selServer = localStorage.getItem('rankupServer'); } catch (e) {}
 function showStatus(message, error=false){const el=document.getElementById('status');el.textContent=message;el.className='status show'+(error?' error':'');}
 function clearStatus(){document.getElementById('status').className='status';}
 function buzz(){try{tg?.HapticFeedback?.impactOccurred('light')}catch(e){}}
-function go(page){buzz();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));const navPage=page==='leaderboard'?'profile':page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===navPage));clearStatus();window.scrollTo({top:0});if(page==='leaderboard')loadLeaderboard();if(page==='friends')refreshSocial();if(page==='admin')loadAdmin();}
+function go(page){buzz();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));const navPage=page==='leaderboard'?'profile':page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===navPage));clearStatus();window.scrollTo({top:0});if(page==='leaderboard')loadLeaderboard();if(page==='friends')refreshSocial();if(page==='admin')loadAdmin();if(page==='tournaments')loadTournaments();}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 const apiConfigured = API_BASE.startsWith('https://') && !API_BASE.includes('REPLACE_WITH');
 async function request(path, options={}) {
@@ -754,6 +758,54 @@ body{background:radial-gradient(120% 60% at 50% -10%,#2a1306 0%,#07070a 55%)}
    const pl=r.players,pod=(x,i)=>x?'<div class="pod p'+i+'"><span class="big">#'+i+'</span><div class="av">'+av(x)+'</div><b>'+escapeHtml(x.game_nick)+'</b><em>ELO '+x.elo+'</em></div>':'<div></div>';
    box.innerHTML=pl.length?'<div class="podium">'+pod(pl[1],2)+pod(pl[0],1)+pod(pl[2],3)+'</div>'+pl.slice(3).map(x=>pRow(x,'<b>'+x.elo+'</b>',x.wins+' побед · '+x.losses+' поражений',{me:x.me,prefix:'<span class="rk">'+rankBadge(x.rank)+'</span>'})).join(''):'<div class="empty">Игроков пока нет.</div>';
   }catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+ };
+})();
+</script>
+<style>
+.tcard{display:block;width:100%;text-align:left;color:#fff;font:inherit;cursor:pointer;background:var(--panel);border:1px solid rgba(255,122,26,.35);border-radius:14px;padding:14px;margin:0 0 10px;transition:transform .12s}.tcard:active{transform:scale(.98)}
+.tcard b{display:block;font-size:15px;line-height:1.3}.tcard .tm{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.pill.ok{color:#7be07b;border-color:#235a23}.pill.off{color:#ff8a80;border-color:#5a2222}.pill.hot{color:var(--orange);border-color:rgba(255,122,26,.5)}
+.tinfo{margin:12px 0}.tinfo small{display:block;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}.tinfo div{font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+</style>
+<script>
+(function(){
+ const fmtSlots=t=>t.slots?t.registered+' / '+t.slots+' мест':t.registered+' участн.';
+ function pills(t){
+  let h='';
+  if(t.joined)h+='<span class="pill ok">Вы записаны</span>';
+  else if(t.status!=='open')h+='<span class="pill off">Регистрация закрыта</span>';
+  else if(t.full)h+='<span class="pill off">Мест нет</span>';
+  else h+='<span class="pill hot">Открыта регистрация</span>';
+  return h;
+ }
+ window.loadTournaments=async function(){
+  const box=document.getElementById('tourList');
+  try{
+   const r=await request('/api/tournaments');window._tours=r.tournaments;
+   box.innerHTML=r.tournaments.length?r.tournaments.map(t=>'<button class="tcard" onclick="openTournament('+t.id+')"><b>'+escapeHtml(t.title)+'</b>'
+    +'<div class="tm">'+pills(t)+(t.starts_at?'<span class="pill">'+escapeHtml(t.starts_at)+'</span>':'')+'<span class="pill">'+escapeHtml(fmtSlots(t))+'</span></div></button>').join('')
+    :'<div class="card"><div class="empty">Сейчас нет турниров. Загляни позже — администратор скоро добавит новые.</div></div>';
+  }catch(e){box.innerHTML='<div class="card"><div class="empty">'+escapeHtml(e.message)+'</div></div>';}
+ };
+ window.closeTournament=function(){document.getElementById('trOvl').classList.remove('show');};
+ function info(label,val){return '<div class="tinfo"><small>'+label+'</small><div>'+escapeHtml(val||'—')+'</div></div>';}
+ window.openTournament=function(id){
+  const t=(window._tours||[]).find(x=>x.id===id);if(!t)return;buzz();
+  let action='';
+  if(t.joined)action=t.status==='open'?'<button class="btn secondary" id="trBtn" onclick="tourAct('+id+',\'unregister\')">ОТМЕНИТЬ РЕГИСТРАЦИЮ</button>':'';
+  else if(t.status!=='open')action='<button class="btn secondary" disabled>РЕГИСТРАЦИЯ ЗАКРЫТА</button>';
+  else if(t.full)action='<button class="btn secondary" disabled>МЕСТ НЕТ</button>';
+  else action='<button class="btn" id="trBtn" onclick="tourAct('+id+',\'register\')">ЗАРЕГИСТРИРОВАТЬСЯ</button>';
+  document.getElementById('trBody').innerHTML='<div class="row" style="padding:0 0 8px;border:0"><b style="font-size:17px">'+escapeHtml(t.title)+'</b><button class="mini pvx" onclick="closeTournament()" aria-label="Закрыть"><svg class="ic"><use href="#i-x"/></svg></button></div>'
+   +'<div class="tm" style="display:flex;flex-wrap:wrap;gap:6px">'+pills(t)+'<span class="pill">'+escapeHtml(fmtSlots(t))+'</span></div>'
+   +info('Формат турнира',t.format)+info('Призовые',t.prizes)+info('Взнос за участие',t.fee||'Бесплатно')+(t.starts_at?info('Начало',t.starts_at):'')
+   +'<div style="margin-top:16px">'+action+'</div>';
+  document.getElementById('trOvl').classList.add('show');
+ };
+ window.tourAct=async function(id,what){
+  const b=document.getElementById('trBtn');if(b)b.disabled=true;
+  try{const r=await request('/api/tournaments/'+id+'/'+what,{method:'POST'});closeTournament();showStatus(r.message);await loadTournaments();}
+  catch(e){closeTournament();showStatus(e.message,true);await loadTournaments();}
  };
 })();
 </script>
